@@ -19,4 +19,14 @@ public class InvalidCommandArgument extends RuntimeException {
     public TextComponent getUserFuckUp() {
         return userFuckUp;
     }
+
+    @Override
+    public Throwable initCause(Throwable cause) {
+        return this;
+    }
+
+    @Override
+    public Throwable fillInStackTrace() {
+        return this;
+    }
 }

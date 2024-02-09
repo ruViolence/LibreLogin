@@ -116,7 +116,7 @@ public class AuthenticServerHandler<P, S> implements ServerHandler<P, S> {
 
         plugin.getEventProvider().fire(plugin.getEventTypes().lobbyServerChoose, event);
 
-        if (event.isCancelled()) throw new EventCancelledException();
+        if (event.isCancelled()) throw EventCancelledException.INSTANCE;
 
         if (event.getServer() != null) return event.getServer();
 
