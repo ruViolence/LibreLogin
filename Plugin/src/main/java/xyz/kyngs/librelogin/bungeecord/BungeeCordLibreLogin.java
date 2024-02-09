@@ -18,8 +18,6 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import org.bstats.bungeecord.Metrics;
-import org.bstats.charts.CustomChart;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.Logger;
 import xyz.kyngs.librelogin.api.PlatformHandle;
@@ -187,15 +185,6 @@ public class BungeeCordLibreLogin extends AuthenticLibreLogin<ProxiedPlayer, Ser
     @Override
     public ProxiedPlayer getPlayerForUUID(UUID uuid) {
         return bootstrap.getProxy().getPlayer(uuid);
-    }
-
-    @Override
-    protected void initMetrics(CustomChart... charts) {
-        var metrics = new Metrics(bootstrap, 17982);
-
-        for (CustomChart chart : charts) {
-            metrics.addCustomChart(chart);
-        }
     }
 
     @Override

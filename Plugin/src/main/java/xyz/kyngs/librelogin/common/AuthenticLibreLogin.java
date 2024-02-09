@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.kyori.adventure.audience.Audience;
-import org.bstats.charts.CustomChart;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
 import xyz.kyngs.librelogin.api.LibreLoginPlugin;
@@ -304,8 +303,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
         if (version.dev()) {
             logger.warn("!! YOU ARE RUNNING A DEVELOPMENT BUILD OF LIBRELOGIN !!");
             logger.warn("!! THIS IS NOT A RELEASE, USE THIS ONLY IF YOU WERE INSTRUCTED TO DO SO. DO NOT USE THIS IN PRODUCTION !!");
-        } else {
-            initMetrics();
         }
 
         delay(this::checkForUpdates, 1000);
@@ -712,8 +709,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
             ));
         }
     }
-
-    protected abstract void initMetrics(CustomChart... charts);
 
     @Override
     public AuthenticAuthorizationProvider<P, S> getAuthorizationProvider() {
