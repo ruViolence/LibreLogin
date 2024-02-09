@@ -20,6 +20,10 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.byteflux.libby.VelocityLibraryManager;
 import org.slf4j.Logger;
 import xyz.kyngs.librelogin.api.provider.LibreLoginProvider;
+import xyz.kyngs.librelogin.velocity.command.ChangePasswordCommand;
+import xyz.kyngs.librelogin.velocity.command.LibreLoginCommand;
+import xyz.kyngs.librelogin.velocity.command.LoginCommand;
+import xyz.kyngs.librelogin.velocity.command.RegisterCommand;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -80,6 +84,11 @@ public class VelocityBootstrap implements LibreLoginProvider<Player, RegisteredS
     @Subscribe
     public void onInitialization(ProxyInitializeEvent event) {
         libreLogin.enable();
+
+        server.getCommandManager().register("login", new LoginCommand(this), "l", "log");
+        server.getCommandManager().register("register", new RegisterCommand(this), "reg");
+        server.getCommandManager().register("changepassword", new ChangePasswordCommand(this), "changepass");
+        server.getCommandManager().register("librelogin", new LibreLoginCommand(this));
 
         server.getEventManager().register(this, new Blockers(libreLogin.getAuthorizationProvider(), libreLogin.getConfiguration(), libreLogin.getMessages()));
         server.getEventManager().register(this, new VelocityListeners(libreLogin));

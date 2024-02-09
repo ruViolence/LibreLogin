@@ -33,7 +33,6 @@ import xyz.kyngs.librelogin.api.server.ServerHandler;
 import xyz.kyngs.librelogin.api.util.SemanticVersion;
 import xyz.kyngs.librelogin.api.util.ThrowableFunction;
 import xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider;
-import xyz.kyngs.librelogin.common.command.CommandProvider;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.config.HoconMessages;
 import xyz.kyngs.librelogin.common.config.HoconPluginConfiguration;
@@ -101,7 +100,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     private HoconPluginConfiguration configuration;
     private HoconMessages messages;
     private AuthenticAuthorizationProvider<P, S> authorizationProvider;
-    private CommandProvider<P, S> commandProvider;
     private ReadWriteDatabaseProvider databaseProvider;
     private DatabaseConnector<?, ?> databaseConnector;
     private LoginTryListener<P, S> loginTryListener;
@@ -171,10 +169,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     @Override
     public Map<String, ReadDatabaseProviderRegistration<?, ?, ?>> getReadProviders() {
         return Map.copyOf(readProviders);
-    }
-
-    public CommandProvider<P, S> getCommandProvider() {
-        return commandProvider;
     }
 
     @Override
@@ -285,7 +279,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
         }
 
         authorizationProvider = new AuthenticAuthorizationProvider<>(this);
-        commandProvider = new CommandProvider<>(this);
 
         if (version.dev()) {
             logger.warn("!! YOU ARE RUNNING A DEVELOPMENT BUILD OF LIBRELOGIN !!");
