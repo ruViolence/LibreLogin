@@ -63,6 +63,7 @@ import xyz.kyngs.librelogin.common.server.AuthenticServerHandler;
 import xyz.kyngs.librelogin.common.totp.AuthenticTOTPProvider;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
+import xyz.kyngs.librelogin.common.util.RateLimiter;
 
 import java.io.*;
 import java.net.URL;
@@ -73,6 +74,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 
 import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.*;
 
@@ -92,6 +94,7 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     private final Multimap<P, CancellableTask> cancelOnExit;
     private final PlatformHandle<P, S> platformHandle;
     private final Set<String> forbiddenPasswords;
+    private final RateLimiter<UUID> limiter = new RateLimiter<>(1, TimeUnit.SECONDS);
     protected Logger logger;
     private AuthenticPremiumProvider premiumProvider;
     private AuthenticEventProvider<P, S> eventProvider;
@@ -150,6 +153,10 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     @Override
     public PlatformHandle<P, S> getPlatformHandle() {
         return platformHandle;
+    }
+
+    public RateLimiter<UUID> getLimiter() {
+        return limiter;
     }
 
     protected abstract PlatformHandle<P, S> providePlatformHandle();

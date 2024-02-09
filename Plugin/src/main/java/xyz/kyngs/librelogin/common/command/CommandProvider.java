@@ -29,7 +29,6 @@ import xyz.kyngs.librelogin.common.command.commands.premium.PremiumEnableCommand
 import xyz.kyngs.librelogin.common.command.commands.staff.LibreLoginCommand;
 import xyz.kyngs.librelogin.common.command.commands.tfa.TwoFactorAuthCommand;
 import xyz.kyngs.librelogin.common.command.commands.tfa.TwoFactorConfirmCommand;
-import xyz.kyngs.librelogin.common.util.RateLimiter;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -40,13 +39,10 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
     public static final LegacyComponentSerializer ACF_SERIALIZER = LegacyComponentSerializer.legacySection();
 
     private final CommandManager<?, ?, ?, ?, ?, ?> manager;
-    private final RateLimiter<UUID> limiter;
     private final Cache<UUID, Object> confirmCache;
 
     public CommandProvider(AuthenticLibreLogin<P, S> plugin) {
         super(plugin);
-
-        limiter = new RateLimiter<>(1, TimeUnit.SECONDS);
 
         manager = plugin.provideManager();
 
@@ -55,7 +51,7 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
         var contexts = manager.getCommandContexts();
 
         contexts.registerIssuerAwareContext(Audience.class, context -> {
-            if (limiter.tryAndLimit(context.getIssuer().getUniqueId()))
+            if (plugin.getLimiter().tryAndLimit(context.getIssuer().getUniqueId()))
                 throw new xyz.kyngs.librelogin.common.command.InvalidCommandArgument(plugin.getMessages().getMessage("error-throttle"));
             return plugin.getAudienceFromIssuer(context.getIssuer());
         });
@@ -145,10 +141,6 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
 
     private String getMessageAsString(String key) {
         return ACF_SERIALIZER.serialize(getMessage(key));
-    }
-
-    public RateLimiter<UUID> getLimiter() {
-        return limiter;
     }
 
     public void injectMessages() {
