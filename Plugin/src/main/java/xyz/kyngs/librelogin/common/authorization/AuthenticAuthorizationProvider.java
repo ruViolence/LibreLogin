@@ -131,8 +131,6 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
                 platformHandle.kick(player, plugin.getMessages().getMessage("kick-time-limit"));
             }, limit * 1000L), player);
         }
-
-        sendInfoMessage(user.isRegistered(), audience);
     }
 
     private void broadcastActionbars() {
