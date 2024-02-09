@@ -19,7 +19,6 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.byteflux.libby.VelocityLibraryManager;
 import org.slf4j.Logger;
-import xyz.kyngs.librelogin.api.LibreLoginPlugin;
 import xyz.kyngs.librelogin.api.provider.LibreLoginProvider;
 
 import java.nio.file.Path;
@@ -87,7 +86,7 @@ public class VelocityBootstrap implements LibreLoginProvider<Player, RegisteredS
     }
 
     @Override
-    public LibreLoginPlugin<Player, RegisteredServer> getLibreLogin() {
+    public VelocityLibreLogin getLibreLogin() {
         return libreLogin;
     }
 
