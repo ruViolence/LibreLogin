@@ -138,13 +138,6 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
-    public static final ConfigurationKey<String> KICK_2FA_ENABLED = new ConfigurationKey<>(
-            "kick-2fa-enabled",
-            "Two-factor has been enabled! Please reconnect.",
-            "This message is displayed when the player enables 2FA.",
-            ConfigurateHelper::getString
-    );
-
     /*
     Errors related to commands
      */
@@ -216,27 +209,6 @@ public class MessageKeys {
             "error-no-password",
             "You don't have a password. You can try using /cracked to disable autologin, and then register.",
             "This message is displayed when the player tries to change password without having one.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> TOTP_NOT_PROVIDED = new ConfigurationKey<>(
-            "totp-not-provided",
-            "You must provide a 2FA code! Use /login <password> <2FA code>, if you lost your code, contact the admins.",
-            "This message is displayed when the player tries to authorize without providing a 2FA code.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> TOTP_WRONG = new ConfigurationKey<>(
-            "totp-wrong",
-            "Wrong 2FA code!",
-            "This message is displayed when the player tries to authorize, or finish the 2FA enablement, with a wrong 2FA code.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> TOTP_NOT_AWAITING = new ConfigurationKey<>(
-            "totp-not-awaiting",
-            "You are currently not in the process of enabling 2FA! Please type /2fa to begin the process.",
-            "This message is displayed when the player attempts to finish the 2FA process, but they are not in the process of enabling 2FA.",
             ConfigurateHelper::getString
     );
 
@@ -600,7 +572,7 @@ public class MessageKeys {
 
     public static final ConfigurationKey<String> PROMPT_LOGIN = new ConfigurationKey<>(
             "prompt-login",
-            "Please login using: &e/login &b<password> [2fa_code]",
+            "Please login using: &e/login &b<password>",
             "This message is displayed when the player is prompted to login.",
             ConfigurateHelper::getString
     );
@@ -667,34 +639,6 @@ public class MessageKeys {
     );
 
     /*
-    TOTP
-     */
-
-    public static final ConfigurationKey<String> TOTP_SHOW_INFO = new ConfigurationKey<>(
-            "totp-show-info",
-            """
-                    Please scan the QR code on the map into your 2FA app. For example, Google Authenticator or Authy.
-                    When you are complete, please execute the /2faconfirm <code> command to finish the process.
-                    Disconnect to abort.""",
-            "This message is displayed when the player is prompted to scan the 2FA QR code.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> TOTP_GENERATING = new ConfigurationKey<>(
-            "totp-generating",
-            "Generating 2FA code...",
-            "This message is displayed when player has begun the 2FA enable procedure.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> TOTP_WRONG_VERSION = new ConfigurationKey<>(
-            "totp-wrong-version",
-            "You must connect with client version %low% - %high%, in order to enable 2FA. You can then connect back with old version again.",
-            "This message is displayed when the player attempts to enable 2FA with an old client.",
-            ConfigurateHelper::getString
-    );
-
-    /*
     Commands Syntax
      */
 
@@ -705,7 +649,7 @@ public class MessageKeys {
 
     public static final ConfigurationKey<String> SYNTAX_LOGIN = new ConfigurationKey<>(
             "syntax.login",
-            "<password> [2fa_code]",
+            "<password>",
             "This message is displayed when the player attempts to login with wrong syntax.",
             ConfigurateHelper::getString
     );
@@ -780,13 +724,6 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
-    public static final ConfigurationKey<String> SYNTAX_USER_2FA_OFF = new ConfigurationKey<>(
-            "syntax.user-2fa-off",
-            "<name>",
-            "This message is displayed when the player attempts to disable 2FA for other user with wrong syntax.",
-            ConfigurateHelper::getString
-    );
-
     public static final ConfigurationKey<String> SYNTAX_USER_ALTS = new ConfigurationKey<>(
             "syntax.user-alts",
             "<name>",
@@ -798,13 +735,6 @@ public class MessageKeys {
             "syntax.user-pass-change",
             "<name> <newPassword>",
             "This message is displayed when the player attempts to change password for other user with wrong syntax.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> SYNTAX_2FA_CONFIRM = new ConfigurationKey<>(
-            "syntax.2fa-confirm",
-            "<code>",
-            "This message is displayed when the player attempts to confirm 2FA with wrong syntax.",
             ConfigurateHelper::getString
     );
 
@@ -918,13 +848,6 @@ public class MessageKeys {
             ConfigurateHelper::getString
     );
 
-    public static final ConfigurationKey<String> AUTOCOMPLETE_USER_2FA_OFF = new ConfigurationKey<>(
-            "autocomplete.user-2fa-off",
-            "@players",
-            "This hint is displayed when the player starts typing the /librelogin user 2fa-off command.",
-            ConfigurateHelper::getString
-    );
-
     public static final ConfigurationKey<String> AUTOCOMPLETE_USER_ALTS = new ConfigurationKey<>(
             "autocomplete.user-alts",
             "@players",
@@ -936,13 +859,6 @@ public class MessageKeys {
             "autocomplete.user-pass-change",
             "@players newPassword",
             "This hint is displayed when the player starts typing the /librelogin user pass-change command.",
-            ConfigurateHelper::getString
-    );
-
-    public static final ConfigurationKey<String> AUTOCOMPLETE_2FA_CONFIRM = new ConfigurationKey<>(
-            "autocomplete.2fa-confirm",
-            "code",
-            "This hint is displayed when the player starts typing the /2fa-confirm command.",
             ConfigurateHelper::getString
     );
 

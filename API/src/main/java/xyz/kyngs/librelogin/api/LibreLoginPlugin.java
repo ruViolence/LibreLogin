@@ -20,7 +20,6 @@ import xyz.kyngs.librelogin.api.image.ImageProjector;
 import xyz.kyngs.librelogin.api.integration.LimboIntegration;
 import xyz.kyngs.librelogin.api.premium.PremiumProvider;
 import xyz.kyngs.librelogin.api.server.ServerHandler;
-import xyz.kyngs.librelogin.api.totp.TOTPProvider;
 import xyz.kyngs.librelogin.api.util.SemanticVersion;
 import xyz.kyngs.librelogin.api.util.ThrowableFunction;
 
@@ -102,13 +101,6 @@ public interface LibreLoginPlugin<P, S> {
      * @return The database provider
      */
     ReadWriteDatabaseProvider getDatabaseProvider();
-
-    /**
-     * Gets the plugin's TOTP provider.
-     *
-     * @return The TOTP provider
-     */
-    TOTPProvider getTOTPProvider();
 
     /**
      * Gets the plugin's image projector.

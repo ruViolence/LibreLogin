@@ -30,7 +30,6 @@ import xyz.kyngs.librelogin.api.integration.LimboIntegration;
 import xyz.kyngs.librelogin.api.premium.PremiumException;
 import xyz.kyngs.librelogin.api.premium.PremiumUser;
 import xyz.kyngs.librelogin.api.server.ServerHandler;
-import xyz.kyngs.librelogin.api.totp.TOTPProvider;
 import xyz.kyngs.librelogin.api.util.SemanticVersion;
 import xyz.kyngs.librelogin.api.util.ThrowableFunction;
 import xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider;
@@ -58,7 +57,6 @@ import xyz.kyngs.librelogin.common.log.SimpleLogFilter;
 import xyz.kyngs.librelogin.common.migrate.*;
 import xyz.kyngs.librelogin.common.premium.AuthenticPremiumProvider;
 import xyz.kyngs.librelogin.common.server.AuthenticServerHandler;
-import xyz.kyngs.librelogin.common.totp.AuthenticTOTPProvider;
 import xyz.kyngs.librelogin.common.util.CancellableTask;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
 import xyz.kyngs.librelogin.common.util.RateLimiter;
@@ -97,7 +95,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     private AuthenticPremiumProvider premiumProvider;
     private AuthenticEventProvider<P, S> eventProvider;
     private AuthenticServerHandler<P, S> serverHandler;
-    private TOTPProvider totpProvider;
     private AuthenticImageProjector<P, S> imageProjector;
     private FloodgateIntegration floodgateApi;
     private SemanticVersion version;
@@ -191,11 +188,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     }
 
     @Override
-    public TOTPProvider getTOTPProvider() {
-        return totpProvider;
-    }
-
-    @Override
     public AuthenticImageProjector<P, S> getImageProjector() {
         return imageProjector;
     }
@@ -285,15 +277,12 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
         imageProjector = provideImageProjector();
 
         if (imageProjector != null) {
-            if (!configuration.get(TOTP_ENABLED)) {
+            if (true) { // TOTP is removed
                 imageProjector = null;
-                logger.warn("2FA is disabled in the configuration, aborting...");
             } else {
                 imageProjector.enable();
             }
         }
-
-        totpProvider = imageProjector == null ? null : new AuthenticTOTPProvider(this);
 
         authorizationProvider = new AuthenticAuthorizationProvider<>(this);
         commandProvider = new CommandProvider<>(this);

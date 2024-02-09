@@ -14,7 +14,6 @@ import net.kyori.adventure.title.Title;
 import xyz.kyngs.librelogin.api.authorization.AuthorizationProvider;
 import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
-import xyz.kyngs.librelogin.api.totp.TOTPData;
 import xyz.kyngs.librelogin.common.AuthenticHandler;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
@@ -32,14 +31,12 @@ import java.util.concurrent.TimeUnit;
 public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S> implements AuthorizationProvider<P> {
 
     private final Map<P, Boolean> unAuthorized;
-    private final Map<P, String> awaiting2FA;
     private final Cache<UUID, EmailVerifyData> emailConfirmCache;
     private final Cache<UUID, String> passwordResetCache;
 
     public AuthenticAuthorizationProvider(AuthenticLibreLogin<P, S> plugin) {
         super(plugin);
         unAuthorized = new ConcurrentHashMap<>();
-        awaiting2FA = new ConcurrentHashMap<>();
 
         var millis = plugin.getConfiguration().get(ConfigurationKeys.MILLISECONDS_TO_REFRESH_NOTIFICATION);
 
@@ -68,7 +65,6 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
 
     public void onExit(P player) {
         stopTracking(player);
-        awaiting2FA.remove(player);
         emailConfirmCache.invalidate(platformHandle.getUUIDForPlayer(player));
         passwordResetCache.invalidate(platformHandle.getUUIDForPlayer(player));
     }
@@ -76,11 +72,6 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     @Override
     public boolean isAuthorized(P player) {
         return !unAuthorized.containsKey(player);
-    }
-
-    @Override
-    public boolean isAwaiting2FA(P player) {
-        return awaiting2FA.containsKey(player);
     }
 
     @Override
@@ -100,17 +91,6 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         audience.sendActionBar(Component.empty());
         plugin.getEventProvider().fire(plugin.getEventTypes().authenticated, new AuthenticAuthenticatedEvent<>(user, player, plugin, reason));
         plugin.authorize(player, user, audience);
-    }
-
-    @Override
-    public boolean confirmTwoFactorAuth(P player, Integer code, User user) {
-        var secret = awaiting2FA.get(player);
-        if (plugin.getTOTPProvider().verify(code, secret)) {
-            user.setSecret(secret);
-            plugin.getDatabaseProvider().updateUser(user);
-            return true;
-        }
-        return false;
     }
 
     public void startTracking(User user, P player) {
@@ -197,20 +177,5 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     }
 
     public record EmailVerifyData(String email, String token, UUID uuid) {
-    }
-
-    public void beginTwoFactorAuth(User user, P player, TOTPData data) {
-        awaiting2FA.put(player, data.secret());
-
-        var limbo = plugin.getServerHandler().chooseLimboServer(user, player);
-
-        if (limbo == null) {
-            platformHandle.kick(player, plugin.getMessages().getMessage("kick-no-limbo"));
-            return;
-        }
-
-        platformHandle.movePlayer(player, limbo).whenComplete((t, e) -> {
-            if (t != null || e != null) awaiting2FA.remove(player);
-        });
     }
 }

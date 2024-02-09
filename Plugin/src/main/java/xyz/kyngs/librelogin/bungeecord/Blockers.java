@@ -17,7 +17,6 @@ import xyz.kyngs.librelogin.api.authorization.AuthorizationProvider;
 import xyz.kyngs.librelogin.common.config.HoconPluginConfiguration;
 
 import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.ALLOWED_COMMANDS_WHILE_UNAUTHORIZED;
-import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.LIMBO;
 
 public class Blockers implements Listener {
 
@@ -39,7 +38,7 @@ public class Blockers implements Listener {
         }
 
         if (event.getSender() instanceof ProxiedPlayer player) {
-            if (!authorizationProvider.isAuthorized(player) || authorizationProvider.isAwaiting2FA(player)) {
+            if (!authorizationProvider.isAuthorized(player)) {
                 event.setCancelled(true);
             }
         }
@@ -48,7 +47,7 @@ public class Blockers implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onCommand(ChatEvent event) {
         if (!(event.getSender() instanceof ProxiedPlayer player)) return;
-        if (authorizationProvider.isAuthorized(player) && !authorizationProvider.isAwaiting2FA(player))
+        if (authorizationProvider.isAuthorized(player))
             return;
 
         var command = event.getMessage().substring(1).split(" ")[0];
@@ -64,16 +63,12 @@ public class Blockers implements Listener {
     public void onServerConnect(ServerConnectEvent event) {
         if (!authorizationProvider.isAuthorized(event.getPlayer()) && event.getReason() != ServerConnectEvent.Reason.JOIN_PROXY) {
             event.setCancelled(true);
-        } else if (authorizationProvider.isAwaiting2FA(event.getPlayer())) {
-            if (!configuration.get(LIMBO).contains(event.getTarget().getName())) {
-                event.setCancelled(true);
-            }
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onServerKick(ServerKickEvent event) {
-        if (!authorizationProvider.isAuthorized(event.getPlayer()) || authorizationProvider.isAwaiting2FA(event.getPlayer())) {
+        if (!authorizationProvider.isAuthorized(event.getPlayer())) {
             var reason = event.getKickReasonComponent();
             if (reason == null) {
                 event.getPlayer().disconnect("Limbo not running");

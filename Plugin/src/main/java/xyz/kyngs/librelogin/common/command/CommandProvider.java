@@ -23,8 +23,6 @@ import xyz.kyngs.librelogin.common.command.commands.premium.PremiumConfirmComman
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumDisableCommand;
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumEnableCommand;
 import xyz.kyngs.librelogin.common.command.commands.staff.LibreLoginCommand;
-import xyz.kyngs.librelogin.common.command.commands.tfa.TwoFactorAuthCommand;
-import xyz.kyngs.librelogin.common.command.commands.tfa.TwoFactorConfirmCommand;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -98,11 +96,6 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
         manager.registerCommand(new PremiumDisableCommand<>(plugin));
         manager.registerCommand(new ChangePasswordCommand<>(plugin));
         manager.registerCommand(new LibreLoginCommand<>(plugin));
-
-        if (plugin.getTOTPProvider() != null) {
-            manager.registerCommand(new TwoFactorAuthCommand<>(plugin));
-            manager.registerCommand(new TwoFactorConfirmCommand<>(plugin));
-        }
 
     }
 

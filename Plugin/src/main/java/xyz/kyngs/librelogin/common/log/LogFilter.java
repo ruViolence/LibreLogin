@@ -23,7 +23,6 @@ public abstract class LogFilter {
         PROTECTED_COMMANDS.add("reg");
         PROTECTED_COMMANDS.add("premium");
         PROTECTED_COMMANDS.add("autologin");
-        PROTECTED_COMMANDS.add("2faconfirm");
         PROTECTED_COMMANDS.add("changepassword");
         PROTECTED_COMMANDS.add("changepass");
         PROTECTED_COMMANDS.add("passch");

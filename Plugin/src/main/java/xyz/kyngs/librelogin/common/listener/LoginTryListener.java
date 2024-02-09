@@ -33,7 +33,7 @@ public class LoginTryListener<P, S> {
 
     private void onWrongPassword(WrongPasswordEvent<P, S> wrongPasswordEvent) {
         AuthenticationSource source = wrongPasswordEvent.getSource();
-        if (source != AuthenticationSource.LOGIN && source != AuthenticationSource.TOTP)
+        if (source != AuthenticationSource.LOGIN)
             return;
         if (plugin.getConfiguration().get(ConfigurationKeys.MAX_LOGIN_ATTEMPTS) == -1)
             return;
@@ -41,7 +41,7 @@ public class LoginTryListener<P, S> {
         // otherwise sum 1 to the value linked to key
         int currentLoginTry = loginTries.asMap().merge(wrongPasswordEvent.getPlayer(), 1, Integer::sum);
         if (currentLoginTry >= plugin.getConfiguration().get(ConfigurationKeys.MAX_LOGIN_ATTEMPTS)) {
-            String kickMessage = source == AuthenticationSource.LOGIN ? "kick-error-password-wrong" : "kick-error-totp-wrong";
+            String kickMessage = "kick-error-password-wrong";
             plugin.getPlatformHandle().kick(wrongPasswordEvent.getPlayer(), plugin.getMessages().getMessage(kickMessage));
         }
     }

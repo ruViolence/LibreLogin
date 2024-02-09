@@ -24,8 +24,6 @@ public class ConfigurationKeys {
             List.of(
                     "login",
                     "register",
-                    "2fa",
-                    "2faconfirm",
                     "l",
                     "log",
                     "reg",
@@ -244,33 +242,6 @@ public class ConfigurationKeys {
             ConfigurateHelper::getString
     );
 
-    public static final ConfigurationKey<?> TOTP = ConfigurationKey.getComment(
-            "totp",
-            """
-                    This section is used for 2FA configuration.
-                    !! YOU MUST HAVE PROTOCOLIZE INSTALLED FOR THIS TO WORK !!
-                                        
-                    You can find more information on the wiki: https://github.com/kyngs/LibreLogin/wiki/2FA
-                    """
-    );
-
-    public static final ConfigurationKey<Boolean> TOTP_ENABLED = new ConfigurationKey<>(
-            "totp.enabled",
-            true,
-            """
-                    Should we enable TOTP-Based Two-Factor Authentication? If you don't know what this is, this is the 2FA used in applications like Google Authenticator etc.
-                    I heavily suggest you to read this wiki page: https://github.com/kyngs/LibreLogin/wiki/2FA
-                    """,
-            ConfigurateHelper::getBoolean
-    );
-
-    public static final ConfigurationKey<String> TOTP_LABEL = new ConfigurationKey<>(
-            "totp.label",
-            "LibreLogin Network",
-            "The label to be displayed in the 2FA app. Change this to your network name.",
-            ConfigurateHelper::getString
-    );
-
     public static final ConfigurationKey<Integer> MINIMUM_PASSWORD_LENGTH = new ConfigurationKey<>(
             "minimum-password-length",
             -1,
@@ -318,13 +289,6 @@ public class ConfigurationKeys {
             false,
             "!!THIS OPTION IS IRRELEVANT WHEN USING PAPER!! Should we fallback players to lobby servers if the server they are on shutdowns? If set to false, they will be kicked.",
             ConfigurateHelper::getBoolean
-    );
-
-    public static final ConfigurationKey<Integer> TOTP_DELAY = new ConfigurationKey<>(
-            "totp.delay",
-            1000,
-            "The delay in milliseconds until player is given a map to scan the QR code. Increase this value if the map disappears too quickly.",
-            ConfigurateHelper::getInt
     );
 
     public static final ConfigurationKey<Boolean> ALLOW_PROXY_CONNECTIONS = new ConfigurationKey<>(

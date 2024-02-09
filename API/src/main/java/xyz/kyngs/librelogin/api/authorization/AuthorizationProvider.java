@@ -26,14 +26,6 @@ public interface AuthorizationProvider<P> {
     boolean isAuthorized(P player);
 
     /**
-     * Checks whether the player is in the process of enabling 2FA.
-     *
-     * @param player The player.
-     * @return True if the player is in the process of enabling 2FA, false otherwise.
-     */
-    boolean isAwaiting2FA(P player);
-
-    /**
      * Authorizes the player, if the player is not already authorized. Implementation must make sure that {@link #isAuthorized(P)} returns false.
      *
      * @param user   The user.
@@ -41,14 +33,4 @@ public interface AuthorizationProvider<P> {
      * @param reason The reason for authorization.
      */
     void authorize(User user, P player, AuthenticatedEvent.AuthenticationReason reason);
-
-    /**
-     * Finishes the 2FA enabling process.
-     *
-     * @param player The player.
-     * @param code   The code.
-     * @param user   The user.
-     * @return whether the code is valid.
-     */
-    boolean confirmTwoFactorAuth(P player, Integer code, User user);
 }
