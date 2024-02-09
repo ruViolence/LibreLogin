@@ -10,7 +10,7 @@ import xyz.kyngs.librelogin.api.event.PlayerBasedEvent;
 
 /**
  * This event is called after the player has tried to enter the password, but it doesn't match with the player's real password.
- * Note, that this event is fired when the player executes the following commands: /login, /changepassword, /premium, /setemail.
+ * Note, that this event is fired when the player executes the following commands: /login, /changepassword, /premium.
  * Use {@link #getSource()} to check the source of the event.
  *
  */
@@ -42,10 +42,6 @@ public interface WrongPasswordEvent<P, S> extends PlayerBasedEvent<P, S> {
         /**
          * The player has used the /premium command with a wrong password
          */
-        PREMIUM_ENABLE,
-        /**
-         * The player has used the /setemail command with a wrong password
-         */
-        SET_EMAIL
+        PREMIUM_ENABLE
     }
 }

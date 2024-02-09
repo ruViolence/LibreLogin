@@ -18,7 +18,6 @@ import xyz.kyngs.librelogin.api.event.EventProvider;
 import xyz.kyngs.librelogin.api.event.EventTypes;
 import xyz.kyngs.librelogin.api.image.ImageProjector;
 import xyz.kyngs.librelogin.api.integration.LimboIntegration;
-import xyz.kyngs.librelogin.api.mail.EmailHandler;
 import xyz.kyngs.librelogin.api.premium.PremiumProvider;
 import xyz.kyngs.librelogin.api.server.ServerHandler;
 import xyz.kyngs.librelogin.api.totp.TOTPProvider;
@@ -233,16 +232,6 @@ public interface LibreLoginPlugin<P, S> {
      * @return The server handler
      */
     ServerHandler<P, S> getServerHandler();
-
-    /**
-     * Gets the email handler.
-     * <br>
-     * <b>This can be used for sending emails</b>
-     *
-     * @return The email handler, or null if email support is disabled
-     */
-    @Nullable
-    EmailHandler getEmailHandler();
 
     /**
      * Gets the limbo provider integration.

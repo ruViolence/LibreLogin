@@ -55,7 +55,6 @@ import xyz.kyngs.librelogin.common.integration.FloodgateIntegration;
 import xyz.kyngs.librelogin.common.listener.LoginTryListener;
 import xyz.kyngs.librelogin.common.log.Log4JFilter;
 import xyz.kyngs.librelogin.common.log.SimpleLogFilter;
-import xyz.kyngs.librelogin.common.mail.AuthenticEMailHandler;
 import xyz.kyngs.librelogin.common.migrate.*;
 import xyz.kyngs.librelogin.common.premium.AuthenticPremiumProvider;
 import xyz.kyngs.librelogin.common.server.AuthenticServerHandler;
@@ -108,7 +107,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     private CommandProvider<P, S> commandProvider;
     private ReadWriteDatabaseProvider databaseProvider;
     private DatabaseConnector<?, ?> databaseConnector;
-    private AuthenticEMailHandler eMailHandler;
     private LoginTryListener<P, S> loginTryListener;
 
     protected AuthenticLibreLogin() {
@@ -132,11 +130,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     @Override
     public void registerReadProvider(ReadDatabaseProviderRegistration<?, ?, ?> registration) {
         readProviders.put(registration.id(), registration);
-    }
-
-    @Override
-    public AuthenticEMailHandler getEmailHandler() {
-        return eMailHandler;
     }
 
     @Nullable
@@ -301,7 +294,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
         }
 
         totpProvider = imageProjector == null ? null : new AuthenticTOTPProvider(this);
-        eMailHandler = configuration.get(MAIL_ENABLED) ? new AuthenticEMailHandler(this) : null;
 
         authorizationProvider = new AuthenticAuthorizationProvider<>(this);
         commandProvider = new CommandProvider<>(this);

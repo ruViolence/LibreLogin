@@ -19,10 +19,6 @@ import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.command.commands.ChangePasswordCommand;
 import xyz.kyngs.librelogin.common.command.commands.authorization.LoginCommand;
 import xyz.kyngs.librelogin.common.command.commands.authorization.RegisterCommand;
-import xyz.kyngs.librelogin.common.command.commands.mail.ConfirmPasswordReset;
-import xyz.kyngs.librelogin.common.command.commands.mail.ResetPasswordViaEMailCommand;
-import xyz.kyngs.librelogin.common.command.commands.mail.SetEMailCommand;
-import xyz.kyngs.librelogin.common.command.commands.mail.VerifyEMailCommand;
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumConfirmCommand;
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumDisableCommand;
 import xyz.kyngs.librelogin.common.command.commands.premium.PremiumEnableCommand;
@@ -106,13 +102,6 @@ public class CommandProvider<P, S> extends AuthenticHandler<P, S> {
         if (plugin.getTOTPProvider() != null) {
             manager.registerCommand(new TwoFactorAuthCommand<>(plugin));
             manager.registerCommand(new TwoFactorConfirmCommand<>(plugin));
-        }
-
-        if (plugin.getEmailHandler() != null) {
-            manager.registerCommand(new SetEMailCommand<>(plugin));
-            manager.registerCommand(new VerifyEMailCommand<>(plugin));
-            manager.registerCommand(new ResetPasswordViaEMailCommand<>(plugin));
-            manager.registerCommand(new ConfirmPasswordReset<>(plugin));
         }
 
     }
