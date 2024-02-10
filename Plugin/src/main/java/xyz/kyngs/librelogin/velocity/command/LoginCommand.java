@@ -19,6 +19,8 @@ import xyz.kyngs.librelogin.api.event.events.WrongPasswordEvent;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.event.events.AuthenticWrongPasswordEvent;
 import xyz.kyngs.librelogin.velocity.VelocityBootstrap;
+import xyz.kyngs.librelogin.velocity.api.event.PostAuthorizationEvent;
+import xyz.kyngs.librelogin.velocity.api.event.TaskEvent;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -59,8 +61,14 @@ public class LoginCommand extends ALibreCommand implements SimpleCommand {
                 throw new InvalidCommandArgument(getMessage("error-password-wrong"));
             }
 
-            sender.sendMessage(getMessage("info-logged-in"));
-            velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
+            velocityBootstrap.getServer().getEventManager()
+                    .fire(new PostAuthorizationEvent(player, user))
+                    .thenAccept(event -> {
+                        if (event.getResult() == TaskEvent.Result.NORMAL) {
+                            sender.sendMessage(getMessage("info-logged-in"));
+                            velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
+                        }
+                    });
         });
     }
 

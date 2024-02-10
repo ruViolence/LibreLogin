@@ -105,4 +105,8 @@ public class VelocityBootstrap implements LibreLoginProvider<Player, RegisteredS
     public void onShutdown(ProxyShutdownEvent event) {
         libreLogin.disable();
     }
+
+    public ProxyServer getServer() {
+        return server;
+    }
 }
