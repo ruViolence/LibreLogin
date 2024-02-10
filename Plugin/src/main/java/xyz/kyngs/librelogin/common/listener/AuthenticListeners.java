@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> {
 
     @SuppressWarnings("RegExpSimplifiable") //I don't believe you
-    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]*");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{3,16}$");
 
     protected final Plugin plugin;
     protected final PlatformHandle<P, S> platformHandle;
@@ -73,7 +73,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
     }
 
     protected PreLoginResult onPreLogin(String username, InetAddress address) {
-        if (username.length() > 16 || !NAME_PATTERN.matcher(username).matches()) {
+        if (username.length() < 3 || username.length() > 16 || !NAME_PATTERN.matcher(username).matches()) {
             return new PreLoginResult(PreLoginState.DENIED, plugin.getMessages().getMessage("kick-illegal-username"), null);
         }
 
