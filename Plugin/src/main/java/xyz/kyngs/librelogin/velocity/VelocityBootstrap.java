@@ -23,6 +23,7 @@ import xyz.kyngs.librelogin.api.provider.LibreLoginProvider;
 import xyz.kyngs.librelogin.velocity.command.ChangePasswordCommand;
 import xyz.kyngs.librelogin.velocity.command.LibreLoginCommand;
 import xyz.kyngs.librelogin.velocity.command.LoginCommand;
+import xyz.kyngs.librelogin.velocity.command.LogoutCommand;
 import xyz.kyngs.librelogin.velocity.command.RegisterCommand;
 
 import java.nio.file.Path;
@@ -88,6 +89,7 @@ public class VelocityBootstrap implements LibreLoginProvider<Player, RegisteredS
         server.getCommandManager().register("login", new LoginCommand(this), "l", "log");
         server.getCommandManager().register("register", new RegisterCommand(this), "reg");
         server.getCommandManager().register("changepassword", new ChangePasswordCommand(this), "changepass");
+        server.getCommandManager().register("logout", new LogoutCommand(this));
         server.getCommandManager().register("librelogin", new LibreLoginCommand(this));
 
         server.getEventManager().register(this, new Blockers(libreLogin.getAuthorizationProvider(), libreLogin.getConfiguration(), libreLogin.getMessages()));
