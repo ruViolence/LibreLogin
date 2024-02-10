@@ -51,8 +51,6 @@ import xyz.kyngs.librelogin.common.event.AuthenticEventProvider;
 import xyz.kyngs.librelogin.common.image.AuthenticImageProjector;
 import xyz.kyngs.librelogin.common.integration.FloodgateIntegration;
 import xyz.kyngs.librelogin.common.listener.LoginTryListener;
-import xyz.kyngs.librelogin.common.log.Log4JFilter;
-import xyz.kyngs.librelogin.common.log.SimpleLogFilter;
 import xyz.kyngs.librelogin.common.migrate.*;
 import xyz.kyngs.librelogin.common.premium.AuthenticPremiumProvider;
 import xyz.kyngs.librelogin.common.server.AuthenticServerHandler;
@@ -194,18 +192,6 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     protected void enable() {
         version = SemanticVersion.parse(getVersion());
         if (logger == null) logger = provideLogger();
-
-        try {
-            new Log4JFilter().inject();
-        } catch (Throwable ignored) {
-            logger.info("LogFilter is not supported on this platform");
-            var simpleLogger = getSimpleLogger();
-
-            if (simpleLogger != null) {
-                logger.info("Using SimpleLogFilter");
-                new SimpleLogFilter(simpleLogger).inject();
-            }
-        }
 
         var folder = getDataFolder();
         if (!folder.exists()) {
