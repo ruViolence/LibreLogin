@@ -24,6 +24,7 @@ import net.kyori.adventure.text.Component;
 import xyz.kyngs.librelogin.api.event.exception.EventCancelledException;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
+import xyz.kyngs.librelogin.common.listener.PreLoginResult;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
 
 import java.lang.reflect.Field;
@@ -130,7 +131,16 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
             }
         }
 
-        var result = onPreLogin(event.getUsername(), event.getConnection().getRemoteAddress().getAddress());
+        PreLoginResult result;
+
+        try {
+            result = onPreLogin(event.getUsername(), event.getConnection().getRemoteAddress().getAddress());
+        } catch (Exception e) {
+            plugin.getLogger().error("Failed to check PreLoginEvent");
+            e.printStackTrace();
+            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text("Internal authentication error")));
+            return;
+        }
 
         event.setResult(
                 switch (result.state()) {
