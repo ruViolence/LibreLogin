@@ -148,6 +148,14 @@ public class ConfigurationKeys {
                     """,
             ConfigurateHelper::getInt
     );
+    public static final ConfigurationKey<Long> IP_LIMIT_TIME = new ConfigurationKey<>(
+            "ip-limit-time",
+            21600000L,
+            """
+                    Sets the maximum amount of time in milliseconds when IP limit works.
+                    """,
+            ConfigurateHelper::getLong
+    );
 
     public static final ConfigurationKey<Boolean> AUTO_REGISTER = new ConfigurationKey<>(
             "auto-register",

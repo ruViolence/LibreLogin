@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -199,7 +200,14 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
 
             var ipLimit = plugin.getConfiguration().get(ConfigurationKeys.IP_LIMIT);
             if (ipLimit > 0) {
-                var ipCount = plugin.getDatabaseProvider().getByIP(ip.getHostAddress()).size(); // Ideally, this should be a count query, but I'm too lazy to implement that and the performance impact is negligible.
+                Collection<User> usersByIp = plugin.getDatabaseProvider().getByIP(ip.getHostAddress());
+
+                Long ipLimitTime = plugin.getConfiguration().get(ConfigurationKeys.IP_LIMIT_TIME);
+                if (ipLimitTime > 0) {
+                    usersByIp.removeIf(u -> u.getJoinDate() == null || u.getJoinDate().getTime() < System.currentTimeMillis() - ipLimitTime);
+                }
+
+                var ipCount = usersByIp.size();
 
                 if (ipCount >= ipLimit) {
                     throw new InvalidCommandArgument(plugin.getMessages().getMessage("kick-ip-limit",
