@@ -35,6 +35,7 @@ import xyz.kyngs.librelogin.api.util.ThrowableFunction;
 import xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider;
 import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
+import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.config.HoconMessages;
 import xyz.kyngs.librelogin.common.config.HoconPluginConfiguration;
 import xyz.kyngs.librelogin.common.crypto.Argon2IDCryptoProvider;
@@ -60,6 +61,7 @@ import xyz.kyngs.librelogin.common.util.GeneralUtil;
 import xyz.kyngs.librelogin.common.util.RateLimiter;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -724,6 +726,26 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
                 throw new ErrorThenKickException(getMessages().getMessage("kick-invalid-case-username",
                         "%username%", user.getLastNickname(),
                         "%wrong_username%", username
+                ));
+            }
+        }
+    }
+
+    public void checkIpLimit(InetAddress ip) throws ErrorThenKickException {
+        var ipLimit = getConfiguration().get(ConfigurationKeys.IP_LIMIT);
+        if (ipLimit > 0) {
+            Collection<User> usersByIp = getDatabaseProvider().getByIP(ip.getHostAddress());
+
+            Long ipLimitTime = getConfiguration().get(ConfigurationKeys.IP_LIMIT_TIME);
+            if (ipLimitTime > 0) {
+                usersByIp.removeIf(u -> u.getJoinDate() == null || u.getJoinDate().getTime() < System.currentTimeMillis() - ipLimitTime);
+            }
+
+            var ipCount = usersByIp.size();
+
+            if (ipCount >= ipLimit) {
+                throw new ErrorThenKickException(getMessages().getMessage("kick-ip-limit",
+                        "%limit%", String.valueOf(ipLimit)
                 ));
             }
         }

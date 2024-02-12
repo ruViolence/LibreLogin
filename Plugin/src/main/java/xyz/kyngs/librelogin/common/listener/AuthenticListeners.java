@@ -212,25 +212,11 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
      * @return The validated user, or null if the user doesn't exist and {@code generate} is false.
      * @throws InvalidCommandArgument If the username is invalid or there are other validation issues.
      */
-    private User checkAndValidateByName(String username, @Nullable UUID premiumID, boolean generate, InetAddress ip) throws InvalidCommandArgument {
+    private User checkAndValidateByName(String username, @Nullable UUID premiumID, boolean generate, InetAddress ip) throws InvalidCommandArgument, ErrorThenKickException {
+        plugin.checkInvalidCaseUsername(username);
+
         if (generate) {
-            var ipLimit = plugin.getConfiguration().get(ConfigurationKeys.IP_LIMIT);
-            if (ipLimit > 0) {
-                Collection<User> usersByIp = plugin.getDatabaseProvider().getByIP(ip.getHostAddress());
-
-                Long ipLimitTime = plugin.getConfiguration().get(ConfigurationKeys.IP_LIMIT_TIME);
-                if (ipLimitTime > 0) {
-                    usersByIp.removeIf(u -> u.getJoinDate() == null || u.getJoinDate().getTime() < System.currentTimeMillis() - ipLimitTime);
-                }
-
-                var ipCount = usersByIp.size();
-
-                if (ipCount >= ipLimit) {
-                    throw new InvalidCommandArgument(plugin.getMessages().getMessage("kick-ip-limit",
-                            "%limit%", String.valueOf(ipLimit)
-                    ));
-                }
-            }
+            plugin.checkIpLimit(ip);
 
             var newID = plugin.generateNewUUID(
                     username,
