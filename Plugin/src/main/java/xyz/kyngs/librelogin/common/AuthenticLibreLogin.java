@@ -33,6 +33,7 @@ import xyz.kyngs.librelogin.api.server.ServerHandler;
 import xyz.kyngs.librelogin.api.util.SemanticVersion;
 import xyz.kyngs.librelogin.api.util.ThrowableFunction;
 import xyz.kyngs.librelogin.common.authorization.AuthenticAuthorizationProvider;
+import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.config.HoconMessages;
 import xyz.kyngs.librelogin.common.config.HoconPluginConfiguration;
@@ -713,17 +714,18 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
         return null;
     }
 
-    public @Nullable User checkInvalidCaseUsername(String username) {
+    public void checkInvalidCaseUsername(String username) throws ErrorThenKickException {
         // Get the user by the name not case-sensitively
         var user = getDatabaseProvider().getByName(username);
 
         if (user != null) {
             // Check for casing mismatch
             if (!user.getLastNickname().contentEquals(username)) {
-                return user;
+                throw new ErrorThenKickException(getMessages().getMessage("kick-invalid-case-username",
+                        "%username%", user.getLastNickname(),
+                        "%wrong_username%", username
+                ));
             }
         }
-
-        return null;
     }
 }

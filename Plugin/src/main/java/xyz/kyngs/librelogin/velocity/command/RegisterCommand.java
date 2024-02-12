@@ -52,16 +52,7 @@ public class RegisterCommand extends ALibreCommand implements SimpleCommand {
                 throw new InvalidCommandArgument(getMessage("error-password-not-match"));
 
             checkUnauthorized(player);
-            {
-                User invalidCaseUser = velocityBootstrap.getLibreLogin().checkInvalidCaseUsername(player.getUsername());
-                if (invalidCaseUser != null) {
-                    TextComponent message = velocityBootstrap.getLibreLogin().getMessages().getMessage("kick-invalid-case-username",
-                            "%username%", invalidCaseUser.getLastNickname(),
-                            "%wrong_username%", player.getUsername()
-                    );
-                    throw new ErrorThenKickException(message);
-                }
-            }
+            velocityBootstrap.getLibreLogin().checkInvalidCaseUsername(player.getUsername());
             var user = getUser(player);
 
             if (user.isRegistered()) throw new InvalidCommandArgument(getMessage("error-already-registered"));

@@ -16,6 +16,7 @@ import xyz.kyngs.librelogin.api.premium.PremiumException;
 import xyz.kyngs.librelogin.api.premium.PremiumUser;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.authorization.ProfileConflictResolutionStrategy;
+import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.database.AuthenticUser;
@@ -102,13 +103,10 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             return new PreLoginResult(PreLoginState.DENIED, plugin.getMessages().getMessage("kick-illegal-username"), null);
         }
 
-        User invalidCaseUser = plugin.checkInvalidCaseUsername(username);
-        if (invalidCaseUser != null) {
-            TextComponent message = plugin.getMessages().getMessage("kick-invalid-case-username",
-                    "%username%", invalidCaseUser.getLastNickname(),
-                    "%wrong_username%", username
-            );
-            return new PreLoginResult(PreLoginState.DENIED, message, null);
+        try {
+            plugin.checkInvalidCaseUsername(username);
+        } catch (ErrorThenKickException e) {
+            return new PreLoginResult(PreLoginState.DENIED, e.getReason(), null);
         }
 
         PremiumUser mojangData = null;
