@@ -15,6 +15,7 @@ import xyz.kyngs.librelogin.api.crypto.CryptoProvider;
 import xyz.kyngs.librelogin.api.crypto.HashedPassword;
 import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
+import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.event.events.AuthenticPremiumLoginSwitchEvent;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
@@ -39,6 +40,12 @@ public abstract class ALibreCommand {
         }).exceptionally(throwable -> {
             if (throwable instanceof InvalidCommandArgument ica) {
                 sender.sendMessage(ica.getUserFuckUp());
+            } else if (throwable instanceof ErrorThenKickException etke) {
+                if (sender instanceof Player player) {
+                    player.disconnect(etke.getReason());
+                } else {
+                    sender.sendMessage(etke.getReason());
+                }
             }
             return null;
         });

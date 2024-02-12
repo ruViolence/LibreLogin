@@ -7,6 +7,7 @@
 package xyz.kyngs.librelogin.common.listener;
 
 import com.velocitypowered.api.proxy.Player;
+import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
 import xyz.kyngs.librelogin.api.PlatformHandle;
@@ -99,6 +100,15 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
     protected PreLoginResult onPreLogin(String username, InetAddress address) {
         if (username.length() < 3 || username.length() > 16 || !NAME_PATTERN.matcher(username).matches()) {
             return new PreLoginResult(PreLoginState.DENIED, plugin.getMessages().getMessage("kick-illegal-username"), null);
+        }
+
+        User invalidCaseUser = plugin.checkInvalidCaseUsername(username);
+        if (invalidCaseUser != null) {
+            TextComponent message = plugin.getMessages().getMessage("kick-invalid-case-username",
+                    "%username%", invalidCaseUser.getLastNickname(),
+                    "%wrong_username%", username
+            );
+            return new PreLoginResult(PreLoginState.DENIED, message, null);
         }
 
         PremiumUser mojangData = null;
@@ -205,18 +215,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
      * @throws InvalidCommandArgument If the username is invalid or there are other validation issues.
      */
     private User checkAndValidateByName(String username, @Nullable UUID premiumID, boolean generate, InetAddress ip) throws InvalidCommandArgument {
-        // Get the user by the name not case-sensitively
-        var user = plugin.getDatabaseProvider().getByName(username);
-
-        if (user != null) {
-            // Check for casing mismatch
-            if (!user.getLastNickname().contentEquals(username)) {
-                throw new InvalidCommandArgument(plugin.getMessages().getMessage("kick-invalid-case-username",
-                        "%username%", user.getLastNickname(),
-                        "%wrong_username%", username
-                ));
-            }
-        } else if (generate) {
+        if (generate) {
             var ipLimit = plugin.getConfiguration().get(ConfigurationKeys.IP_LIMIT);
             if (ipLimit > 0) {
                 Collection<User> usersByIp = plugin.getDatabaseProvider().getByIP(ip.getHostAddress());
@@ -247,6 +246,8 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                         "%username%", conflictingUser.getLastNickname()
                 ));
             }
+
+            User user;
 
             if (premiumID != null && plugin.getConfiguration().get(ConfigurationKeys.AUTO_REGISTER)) {
                 user = new AuthenticUser(
@@ -279,9 +280,10 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             }
 
             plugin.getDatabaseProvider().insertUser(user);
-        } else return null;
+            return user;
+        }
 
-        return user;
+        return null;
     }
 
     protected BiHolder<Boolean, S> chooseServer(P player, @Nullable String ip, @Nullable User user) {

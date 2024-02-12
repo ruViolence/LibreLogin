@@ -712,4 +712,18 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     protected java.util.logging.Logger getSimpleLogger() {
         return null;
     }
+
+    public @Nullable User checkInvalidCaseUsername(String username) {
+        // Get the user by the name not case-sensitively
+        var user = getDatabaseProvider().getByName(username);
+
+        if (user != null) {
+            // Check for casing mismatch
+            if (!user.getLastNickname().contentEquals(username)) {
+                return user;
+            }
+        }
+
+        return null;
+    }
 }

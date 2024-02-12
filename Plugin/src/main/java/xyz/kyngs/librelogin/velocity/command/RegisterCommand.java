@@ -12,9 +12,12 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
+import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
+import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.velocity.VelocityBootstrap;
 
@@ -46,6 +49,16 @@ public class RegisterCommand extends ALibreCommand implements SimpleCommand {
                 throw new InvalidCommandArgument(getMessage("error-password-not-match"));
 
             checkUnauthorized(player);
+            {
+                User invalidCaseUser = velocityBootstrap.getLibreLogin().checkInvalidCaseUsername(player.getUsername());
+                if (invalidCaseUser != null) {
+                    TextComponent message = velocityBootstrap.getLibreLogin().getMessages().getMessage("kick-invalid-case-username",
+                            "%username%", invalidCaseUser.getLastNickname(),
+                            "%wrong_username%", player.getUsername()
+                    );
+                    throw new ErrorThenKickException(message);
+                }
+            }
             var user = getUser(player);
 
             if (user.isRegistered()) throw new InvalidCommandArgument(getMessage("error-already-registered"));
