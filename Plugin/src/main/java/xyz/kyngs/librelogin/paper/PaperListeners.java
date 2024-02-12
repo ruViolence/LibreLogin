@@ -129,7 +129,7 @@ public class PaperListeners extends AuthenticListeners<PaperLibreLogin, Player, 
             return;
         }
         readOnlyUserCache.invalidate(event.getPlayer().getUniqueId());
-        onPostLogin(event.getPlayer(), data);
+        if (true) throw new IllegalStateException("PostLoginEvent is not supported in Paper");
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

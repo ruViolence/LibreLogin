@@ -61,14 +61,16 @@ public class LoginCommand extends ALibreCommand implements SimpleCommand {
                 throw new InvalidCommandArgument(getMessage("error-password-wrong"));
             }
 
-            velocityBootstrap.getServer().getEventManager()
-                    .fire(new PostAuthorizationEvent(player, user))
-                    .thenAccept(event -> {
-                        if (event.getResult() == TaskEvent.Result.NORMAL) {
-                            sender.sendMessage(getMessage("info-logged-in"));
-                            velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
-                        }
-                    });
+            try {
+                PostAuthorizationEvent event = velocityBootstrap.getServer().getEventManager().fire(new PostAuthorizationEvent(player, user)).get();
+
+                if (event.getResult() == TaskEvent.Result.NORMAL || event.getResult() == TaskEvent.Result.BYPASS) {
+                    sender.sendMessage(getMessage("info-logged-in"));
+                    velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 

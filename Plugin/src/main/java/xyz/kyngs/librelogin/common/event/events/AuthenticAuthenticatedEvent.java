@@ -12,6 +12,7 @@ import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
 import xyz.kyngs.librelogin.common.event.AuthenticPlayerBasedEvent;
 
+@Deprecated(forRemoval = true)
 public class AuthenticAuthenticatedEvent<P, S> extends AuthenticPlayerBasedEvent<P, S> implements AuthenticatedEvent<P, S> {
 
     private final AuthenticationReason reason;

@@ -21,6 +21,7 @@ public class TaskEvent {
     
     public enum Result {
         NORMAL,
-        WAIT
+        WAIT,
+        BYPASS
     }
 }

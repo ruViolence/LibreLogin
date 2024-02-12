@@ -6,11 +6,11 @@
 
 package xyz.kyngs.librelogin.common.listener;
 
+import com.velocitypowered.api.proxy.Player;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
 import xyz.kyngs.librelogin.api.PlatformHandle;
 import xyz.kyngs.librelogin.api.database.User;
-import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
 import xyz.kyngs.librelogin.api.premium.PremiumException;
 import xyz.kyngs.librelogin.api.premium.PremiumUser;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
@@ -18,7 +18,9 @@ import xyz.kyngs.librelogin.common.authorization.ProfileConflictResolutionStrate
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.database.AuthenticUser;
-import xyz.kyngs.librelogin.common.event.events.AuthenticAuthenticatedEvent;
+import xyz.kyngs.librelogin.velocity.VelocityLibreLogin;
+import xyz.kyngs.librelogin.velocity.api.event.PreAuthorizationEvent;
+import xyz.kyngs.librelogin.velocity.api.event.TaskEvent;
 
 import java.net.InetAddress;
 import java.sql.Timestamp;
@@ -41,7 +43,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
         platformHandle = plugin.getPlatformHandle();
     }
 
-    protected void onPostLogin(P player, User user) {
+    protected void onPostLogin(P player, User user, VelocityLibreLogin velocityPlugin) {
         var ip = platformHandle.getIP(player);
         var uuid = platformHandle.getUUIDForPlayer(player);
         if (plugin.fromFloodgate(uuid)) return;
@@ -50,21 +52,42 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             user = plugin.getDatabaseProvider().getByUUID(uuid);
         }
         var sessionTime = Duration.ofSeconds(plugin.getConfiguration().get(ConfigurationKeys.SESSION_TIMEOUT));
+        
+        boolean autoLoginEnabled = user.autoLoginEnabled();
+        boolean hasSession = sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now());
+        PreAuthorizationEvent.Reason reason;
 
-        if (user.autoLoginEnabled()) {
-            plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-premium-logged-in")), 500);
-            plugin.getEventProvider().fire(plugin.getEventTypes().authenticated, new AuthenticAuthenticatedEvent<>(user, player, plugin, AuthenticatedEvent.AuthenticationReason.PREMIUM));
-        } else if (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now())) {
-            plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-session-logged-in")), 500);
-            plugin.getEventProvider().fire(plugin.getEventTypes().authenticated, new AuthenticAuthenticatedEvent<>(user, player, plugin, AuthenticatedEvent.AuthenticationReason.SESSION));
+        if (autoLoginEnabled) {
+            reason = PreAuthorizationEvent.Reason.PREMIUM;
+        } else if (hasSession) {
+            reason = PreAuthorizationEvent.Reason.SESSION;
         } else {
-            plugin.getAuthorizationProvider().startTracking(user, player);
+            reason = PreAuthorizationEvent.Reason.NONE;
         }
 
-        user.setLastSeen(Timestamp.valueOf(LocalDateTime.now()));
+        try {
+            PreAuthorizationEvent event = velocityPlugin.getServer().getEventManager().fire(new PreAuthorizationEvent((Player) player, user, reason)).get();
 
-        var finalUser = user;
-        plugin.delay(() -> plugin.getDatabaseProvider().updateUser(finalUser), 0);
+            if (event.getResult() == TaskEvent.Result.WAIT) {
+                plugin.getAuthorizationProvider().startTracking(user, player);
+            } else {
+                if (autoLoginEnabled) {
+                    plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-premium-logged-in")), 500);
+                } else if (hasSession || event.getResult() == TaskEvent.Result.BYPASS) {
+                    if (event.getResult() == TaskEvent.Result.BYPASS) user.setLastAuthentication(Timestamp.valueOf(LocalDateTime.now()));
+                    plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-session-logged-in")), 500);
+                } else {
+                    plugin.getAuthorizationProvider().startTracking(user, player);
+                }
+            }
+
+            user.setLastSeen(Timestamp.valueOf(LocalDateTime.now()));
+
+            var finalUser = user;
+            plugin.delay(() -> plugin.getDatabaseProvider().updateUser(finalUser), 0);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -282,7 +305,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             ip = platformHandle.getIP(player);
         }
 
-        if (fromFloodgate || user.autoLoginEnabled() || (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now()))) {
+        if (plugin.getAuthorizationProvider().isAuthorized(player) && (fromFloodgate || user.autoLoginEnabled() || (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now())))) {
             return new BiHolder<>(true, plugin.getServerHandler().chooseLobbyServer(user, player, true, false));
         } else {
             return new BiHolder<>(false, plugin.getServerHandler().chooseLimboServer(user, player));

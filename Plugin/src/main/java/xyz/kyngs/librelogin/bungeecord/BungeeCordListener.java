@@ -32,7 +32,7 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordLibreLogin,
 
     @EventHandler(priority = HIGHEST)
     public void onPostLogin(PostLoginEvent event) {
-        onPostLogin(event.getPlayer(), null);
+        if (true) throw new IllegalStateException("PostLoginEvent is not supported in BungeeCord");
     }
 
     @EventHandler
