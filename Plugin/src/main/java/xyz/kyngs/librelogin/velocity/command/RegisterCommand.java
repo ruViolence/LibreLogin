@@ -20,6 +20,9 @@ import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
 import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.velocity.VelocityBootstrap;
+import xyz.kyngs.librelogin.velocity.api.event.PostAuthorizationEvent;
+import xyz.kyngs.librelogin.velocity.api.event.PostRegisterEvent;
+import xyz.kyngs.librelogin.velocity.api.event.TaskEvent;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -65,9 +68,16 @@ public class RegisterCommand extends ALibreCommand implements SimpleCommand {
 
             setPassword(user, password);
 
-            sender.sendMessage(getMessage("info-registered"));
+            try {
+                PostRegisterEvent event = velocityBootstrap.getServer().getEventManager().fire(new PostRegisterEvent(player, user)).get();
 
-            velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.REGISTER);
+                if (event.getResult() == TaskEvent.Result.NORMAL || event.getResult() == TaskEvent.Result.BYPASS) {
+                    sender.sendMessage(getMessage("info-registered"));
+                    velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.REGISTER);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 
