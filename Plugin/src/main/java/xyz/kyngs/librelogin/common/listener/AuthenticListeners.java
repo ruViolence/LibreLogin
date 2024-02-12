@@ -187,7 +187,8 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             // Check for casing mismatch
             if (!user.getLastNickname().contentEquals(username)) {
                 throw new InvalidCommandArgument(plugin.getMessages().getMessage("kick-invalid-case-username",
-                        "%username%", user.getLastNickname()
+                        "%username%", user.getLastNickname(),
+                        "%wrong_username%", username
                 ));
             }
         } else if (generate) {
