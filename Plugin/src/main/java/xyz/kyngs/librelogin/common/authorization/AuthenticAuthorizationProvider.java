@@ -6,8 +6,10 @@
 
 package xyz.kyngs.librelogin.common.authorization;
 
+import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.title.Title;
 import xyz.kyngs.librelogin.api.authorization.AuthorizationProvider;
 import xyz.kyngs.librelogin.api.database.User;
@@ -16,6 +18,8 @@ import xyz.kyngs.librelogin.common.AuthenticHandler;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.event.events.AuthenticAuthenticatedEvent;
+import xyz.kyngs.librelogin.velocity.VelocityBootstrap;
+import xyz.kyngs.librelogin.velocity.api.event.PreInfoSendEvent;
 
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -115,22 +119,34 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
     }
 
     private void sendInfoMessage(boolean registered, Audience audience) {
-        audience.sendMessage(plugin.getMessages().getMessage(registered ? "prompt-login" : "prompt-register"));
-        if (!plugin.getConfiguration().get(ConfigurationKeys.USE_TITLES)) return;
-        var toRefresh = plugin.getConfiguration().get(ConfigurationKeys.MILLISECONDS_TO_REFRESH_NOTIFICATION);
-        //noinspection UnstableApiUsage
-        audience.showTitle(Title.title(
-                plugin.getMessages().getMessage(registered ? "title-login" : "title-register"),
-                plugin.getMessages().getMessage(registered ? "sub-title-login" : "sub-title-register"),
-                Title.Times.of(
-                        Duration.ofMillis(0),
-                        Duration.ofMillis(toRefresh > 0 ?
-                                (long) (toRefresh * 1.1) :
-                                10000
-                        ),
-                        Duration.ofMillis(0)
-                )
-        ));
+        try {
+            TextComponent message = plugin.getMessages().getMessage(registered ? "prompt-login" : "prompt-register");
+            Title title = null;
+            if (plugin.getConfiguration().get(ConfigurationKeys.USE_TITLES)) {
+                var toRefresh = plugin.getConfiguration().get(ConfigurationKeys.MILLISECONDS_TO_REFRESH_NOTIFICATION);
+                //noinspection UnstableApiUsage
+                title = Title.title(
+                        plugin.getMessages().getMessage(registered ? "title-login" : "title-register"),
+                        plugin.getMessages().getMessage(registered ? "sub-title-login" : "sub-title-register"),
+                        Title.Times.of(
+                                Duration.ofMillis(0),
+                                Duration.ofMillis(toRefresh > 0 ?
+                                        (long) (toRefresh * 1.1) :
+                                        10000
+                                ),
+                                Duration.ofMillis(0)
+                        )
+                );
+            }
+
+            PreInfoSendEvent event = VelocityBootstrap.getInstance().getServer().getEventManager().fire(new PreInfoSendEvent((Player) audience, registered, message, title)).get();
+            if (event.isCancelled()) return;
+
+            if (event.getMessage() != null) audience.sendMessage(message);
+            if (event.getTitle() != null) audience.showTitle(event.getTitle());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void stopTracking(P player) {
