@@ -101,21 +101,23 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             return new PreLoginResult(PreLoginState.DENIED, plugin.getMessages().getMessage("kick-illegal-username"), null);
         }
 
-        PremiumUser mojangData;
+        PremiumUser mojangData = null;
 
-        try {
-            mojangData = plugin.getPremiumProvider().getUserForName(username);
-        } catch (PremiumException e) {
-            var message = switch (e.getIssue()) {
-                case THROTTLED -> plugin.getMessages().getMessage("kick-premium-error-throttled");
-                default -> {
-                    plugin.getLogger().error("Encountered an exception while communicating with the Mojang API!");
-                    e.printStackTrace();
-                    yield plugin.getMessages().getMessage("kick-premium-error-undefined");
-                }
-            };
+        if (plugin.getConfiguration().get(ConfigurationKeys.CHECK_PREMIUM)) {
+            try {
+                mojangData = plugin.getPremiumProvider().getUserForName(username);
+            } catch (PremiumException e) {
+                var message = switch (e.getIssue()) {
+                    case THROTTLED -> plugin.getMessages().getMessage("kick-premium-error-throttled");
+                    default -> {
+                        plugin.getLogger().error("Encountered an exception while communicating with the Mojang API!");
+                        e.printStackTrace();
+                        yield plugin.getMessages().getMessage("kick-premium-error-undefined");
+                    }
+                };
 
-            return new PreLoginResult(PreLoginState.DENIED, message, null);
+                return new PreLoginResult(PreLoginState.DENIED, message, null);
+            }
         }
 
         if (mojangData == null) {

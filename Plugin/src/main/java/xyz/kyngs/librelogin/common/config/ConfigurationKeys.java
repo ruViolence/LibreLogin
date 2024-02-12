@@ -150,6 +150,15 @@ public class ConfigurationKeys {
             ConfigurateHelper::getLong
     );
 
+    public static final ConfigurationKey<Boolean> CHECK_PREMIUM = new ConfigurationKey<>(
+            "check-premium",
+            true,
+            """
+                    Should we check for premium usernames?
+                    """,
+            ConfigurateHelper::getBoolean
+    );
+    
     public static final ConfigurationKey<Boolean> AUTO_REGISTER = new ConfigurationKey<>(
             "auto-register",
             false,
