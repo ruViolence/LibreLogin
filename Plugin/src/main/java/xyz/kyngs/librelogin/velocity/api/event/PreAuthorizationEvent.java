@@ -7,28 +7,30 @@
 package xyz.kyngs.librelogin.velocity.api.event;
 
 import com.velocitypowered.api.proxy.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.database.User;
 
 public class PreAuthorizationEvent extends TaskEvent {
-    private final Player player;
-    private final User user;
-    private final Reason reason;
+    private final @NotNull Player player;
+    private final @Nullable User user;
+    private final @NotNull Reason reason;
 
-    public PreAuthorizationEvent(Player player, User user, Reason reason) {
+    public PreAuthorizationEvent(@NotNull Player player, @Nullable User user, @NotNull Reason reason) {
         this.player = player;
         this.user = user;
         this.reason = reason;
     }
     
-    public Player getPlayer() {
+    public @NotNull Player getPlayer() {
         return player;
     }
     
-    public User getUser() {
+    public @Nullable User getUser() {
         return user;
     }
     
-    public Reason getReason() {
+    public @NotNull Reason getReason() {
         return reason;
     }
     
