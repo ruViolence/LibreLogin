@@ -56,11 +56,12 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         if (isAuthorized(player)) {
             throw new IllegalStateException("Player is already authorized");
         }
-        stopTracking(player);
 
         user.setLastAuthentication(Timestamp.valueOf(LocalDateTime.now()));
         user.setIp(platformHandle.getIP(player));
         plugin.getDatabaseProvider().updateUser(user);
+
+        stopTracking(player);
 
         var audience = platformHandle.getAudienceForPlayer(player);
 
