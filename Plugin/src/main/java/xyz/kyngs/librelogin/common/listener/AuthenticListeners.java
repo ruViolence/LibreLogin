@@ -217,13 +217,6 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                 ));
             }
         } else if (generate) {
-            var minLength = plugin.getConfiguration().get(ConfigurationKeys.MINIMUM_USERNAME_LENGTH);
-            if (username.length() < minLength) {
-                throw new InvalidCommandArgument(plugin.getMessages().getMessage("kick-short-username",
-                        "%length%", String.valueOf(minLength)
-                ));
-            }
-
             var ipLimit = plugin.getConfiguration().get(ConfigurationKeys.IP_LIMIT);
             if (ipLimit > 0) {
                 Collection<User> usersByIp = plugin.getDatabaseProvider().getByIP(ip.getHostAddress());
