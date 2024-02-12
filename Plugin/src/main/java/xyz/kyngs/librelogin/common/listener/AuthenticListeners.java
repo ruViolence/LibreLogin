@@ -231,37 +231,19 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                 ));
             }
 
-            User user;
-
-            if (premiumID != null && plugin.getConfiguration().get(ConfigurationKeys.AUTO_REGISTER)) {
-                user = new AuthenticUser(
-                        newID,
-                        premiumID,
-                        null,
-                        username,
-                        Timestamp.valueOf(LocalDateTime.now()),
-                        Timestamp.valueOf(LocalDateTime.now()),
-                        null,
-                        ip.getHostAddress(),
-                        null,
-                        null,
-                        null
-                );
-            } else {
-                user = new AuthenticUser(
-                        newID,
-                        null,
-                        null,
-                        username,
-                        Timestamp.valueOf(LocalDateTime.now()),
-                        Timestamp.valueOf(LocalDateTime.now()),
-                        null,
-                        ip.getHostAddress(),
-                        null,
-                        null,
-                        null
-                );
-            }
+            User user = new AuthenticUser(
+                    newID,
+                    null,
+                    null,
+                    username,
+                    Timestamp.valueOf(LocalDateTime.now()),
+                    Timestamp.valueOf(LocalDateTime.now()),
+                    null,
+                    ip.getHostAddress(),
+                    null,
+                    null,
+                    null
+            );
 
             plugin.getDatabaseProvider().insertUser(user);
             return user;

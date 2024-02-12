@@ -159,16 +159,6 @@ public class ConfigurationKeys {
             ConfigurateHelper::getBoolean
     );
     
-    public static final ConfigurationKey<Boolean> AUTO_REGISTER = new ConfigurationKey<>(
-            "auto-register",
-            false,
-            """
-                    Should we automatically register all players with a premium nickname?
-                    !!CRACKED PLAYERS WILL NOT BE ABLE TO REGISTER PREMIUM USERNAMES!!
-                    """,
-            ConfigurateHelper::getBoolean
-    );
-
     public static final ConfigurationKey<Integer> MILLISECONDS_TO_REFRESH_NOTIFICATION = new ConfigurationKey<>(
             "milliseconds-to-refresh-notification",
             10000,
