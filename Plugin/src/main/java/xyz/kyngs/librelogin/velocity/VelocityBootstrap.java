@@ -20,6 +20,10 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.byteflux.libby.VelocityLibraryManager;
 import org.slf4j.Logger;
 import xyz.kyngs.librelogin.api.provider.LibreLoginProvider;
+import xyz.kyngs.librelogin.velocity.api.event.PostAuthorizationEvent;
+import xyz.kyngs.librelogin.velocity.api.event.PreAuthorizationEvent;
+import xyz.kyngs.librelogin.velocity.api.event.PreInfoSendEvent;
+import xyz.kyngs.librelogin.velocity.api.event.TaskEvent;
 import xyz.kyngs.librelogin.velocity.command.ChangePasswordCommand;
 import xyz.kyngs.librelogin.velocity.command.LibreLoginCommand;
 import xyz.kyngs.librelogin.velocity.command.LoginCommand;
@@ -45,12 +49,18 @@ import javax.inject.Inject;
         }
 )
 public class VelocityBootstrap implements LibreLoginProvider<Player, RegisteredServer> {
+    private static VelocityBootstrap INSTANCE;
 
     ProxyServer server;
     private final VelocityLibreLogin libreLogin;
 
+    public static VelocityBootstrap getInstance() {
+        return INSTANCE;
+    }
+
     @Inject
     public VelocityBootstrap(ProxyServer server, Injector injector, Logger logger, PluginContainer container) {
+        INSTANCE = this;
         this.server = server;
 
         // This is a very ugly hack to be able to load libraries in the constructor
@@ -104,6 +114,7 @@ public class VelocityBootstrap implements LibreLoginProvider<Player, RegisteredS
     @Subscribe
     public void onShutdown(ProxyShutdownEvent event) {
         libreLogin.disable();
+        INSTANCE = null;
     }
 
     public ProxyServer getServer() {
