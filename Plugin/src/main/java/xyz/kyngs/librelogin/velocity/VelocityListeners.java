@@ -96,6 +96,7 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
         if (existing != null && plugin.fromFloodgate(existing.getId())) return;
 
         var profile = plugin.getDatabaseProvider().getByName(event.getUsername());
+        if (profile == null) return;
 
         var gProfile = event.getOriginalProfile();
 

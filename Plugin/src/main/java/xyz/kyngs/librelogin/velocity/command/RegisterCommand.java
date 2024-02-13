@@ -12,15 +12,11 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
-import xyz.kyngs.librelogin.api.database.User;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
-import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.velocity.VelocityBootstrap;
-import xyz.kyngs.librelogin.velocity.api.event.PostAuthorizationEvent;
 import xyz.kyngs.librelogin.velocity.api.event.PostRegisterEvent;
 import xyz.kyngs.librelogin.velocity.api.event.TaskEvent;
 
@@ -53,7 +49,7 @@ public class RegisterCommand extends ALibreCommand implements SimpleCommand {
 
             checkUnauthorized(player);
             velocityBootstrap.getLibreLogin().checkInvalidCaseUsername(player.getUsername());
-            var user = getUser(player);
+            var user = velocityBootstrap.getLibreLogin().getOrCreateUserAndValidate(player.getUsername(), null, player.getRemoteAddress().getAddress());
 
             if (user.isRegistered()) throw new InvalidCommandArgument(getMessage("error-already-registered"));
 

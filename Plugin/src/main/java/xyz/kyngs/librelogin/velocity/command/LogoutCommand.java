@@ -35,7 +35,7 @@ public class LogoutCommand extends ALibreCommand implements SimpleCommand {
         runAsync(sender, () -> {
             var user = getUser(player);
 
-            if (!user.isRegistered()) {
+            if (user == null || !user.isRegistered()) {
                 throw new InvalidCommandArgument(getMessage("error-no-password"));
             }
 

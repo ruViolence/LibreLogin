@@ -45,7 +45,9 @@ public class LoginCommand extends ALibreCommand implements SimpleCommand {
 
             checkUnauthorized(player);
             var user = getUser(player);
-            if (!user.isRegistered()) throw new InvalidCommandArgument(getMessage("error-not-registered"));
+            if (user == null || !user.isRegistered()) {
+                throw new InvalidCommandArgument(getMessage("error-not-registered"));
+            }
 
 //            sender.sendMessage(getMessage("info-logging-in"));
 

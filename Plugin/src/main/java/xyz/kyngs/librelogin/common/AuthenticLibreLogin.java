@@ -11,9 +11,8 @@ import co.aikar.commands.CommandManager;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import net.kyori.adventure.audience.Audience;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
 import xyz.kyngs.librelogin.api.LibreLoginPlugin;
@@ -42,6 +41,7 @@ import xyz.kyngs.librelogin.common.crypto.Argon2IDCryptoProvider;
 import xyz.kyngs.librelogin.common.crypto.BCrypt2ACryptoProvider;
 import xyz.kyngs.librelogin.common.crypto.MessageDigestCryptoProvider;
 import xyz.kyngs.librelogin.common.database.AuthenticDatabaseProvider;
+import xyz.kyngs.librelogin.common.database.AuthenticUser;
 import xyz.kyngs.librelogin.common.database.connector.AuthenticMySQLDatabaseConnector;
 import xyz.kyngs.librelogin.common.database.connector.AuthenticPostgreSQLDatabaseConnector;
 import xyz.kyngs.librelogin.common.database.connector.AuthenticSQLiteDatabaseConnector;
@@ -65,6 +65,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -719,7 +721,10 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
     public void checkInvalidCaseUsername(String username) throws ErrorThenKickException {
         // Get the user by the name not case-sensitively
         var user = getDatabaseProvider().getByName(username);
+        checkInvalidCaseUsername(username, user);
+    }
 
+    public void checkInvalidCaseUsername(String username, User user) throws ErrorThenKickException {
         if (user != null) {
             // Check for casing mismatch
             if (!user.getLastNickname().contentEquals(username)) {
@@ -749,5 +754,57 @@ public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S
                 ));
             }
         }
+    }
+
+    /**
+     * Checks and validates a user by their username.
+     *
+     * @param username  The username of the user.
+     * @param premiumID The premium ID of the user.
+     * @param ip        The IP address of the user.
+     * @return The validated user, or null if the user doesn't exist and {@code generate} is false.
+     * @throws InvalidCommandArgument If the username is invalid or there are other validation issues.
+     */
+    public @NotNull User getOrCreateUserAndValidate(String username, @Nullable UUID premiumID, InetAddress ip) throws ErrorThenKickException {
+        // Get the user by the name not case-sensitively
+        var user = getDatabaseProvider().getByName(username);
+
+        // The user with the given name already exists; check the case of the name and return it
+        if (user != null) {
+            checkInvalidCaseUsername(username, user);
+            return user;
+        }
+        
+        checkIpLimit(ip);
+
+        var newID = generateNewUUID(
+                username,
+                premiumID
+        );
+
+        var conflictingUser = getDatabaseProvider().getByUUID(newID);
+
+        if (conflictingUser != null) {
+            throw new ErrorThenKickException(getMessages().getMessage("kick-occupied-username",
+                    "%username%", conflictingUser.getLastNickname()
+            ));
+        }
+
+        user = new AuthenticUser(
+                newID,
+                null,
+                null,
+                username,
+                Timestamp.valueOf(LocalDateTime.now()),
+                Timestamp.valueOf(LocalDateTime.now()),
+                null,
+                ip.getHostAddress(),
+                null,
+                null,
+                null
+        );
+
+        getDatabaseProvider().insertUser(user);
+        return user;
     }
 }

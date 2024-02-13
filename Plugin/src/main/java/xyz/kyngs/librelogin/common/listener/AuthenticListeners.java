@@ -7,19 +7,14 @@
 package xyz.kyngs.librelogin.common.listener;
 
 import com.velocitypowered.api.proxy.Player;
-import net.kyori.adventure.text.TextComponent;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
 import xyz.kyngs.librelogin.api.PlatformHandle;
 import xyz.kyngs.librelogin.api.database.User;
-import xyz.kyngs.librelogin.api.premium.PremiumException;
-import xyz.kyngs.librelogin.api.premium.PremiumUser;
 import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.authorization.ProfileConflictResolutionStrategy;
 import xyz.kyngs.librelogin.common.command.ErrorThenKickException;
-import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
-import xyz.kyngs.librelogin.common.database.AuthenticUser;
 import xyz.kyngs.librelogin.velocity.VelocityLibreLogin;
 import xyz.kyngs.librelogin.velocity.api.event.PreAuthorizationEvent;
 import xyz.kyngs.librelogin.velocity.api.event.TaskEvent;
@@ -28,8 +23,6 @@ import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> {
@@ -53,6 +46,13 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
         if (user == null) {
             user = plugin.getDatabaseProvider().getByUUID(uuid);
         }
+
+        // Player is not registered yet
+        if (user == null || !user.isRegistered()) {
+            plugin.getAuthorizationProvider().startTracking(player, false);
+            return;
+        }
+
         var sessionTime = Duration.ofSeconds(plugin.getConfiguration().get(ConfigurationKeys.SESSION_TIMEOUT));
         
         boolean autoLoginEnabled = user.autoLoginEnabled();
@@ -71,7 +71,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             PreAuthorizationEvent event = velocityPlugin.getServer().getEventManager().fire(new PreAuthorizationEvent((Player) player, user, reason)).get();
 
             if (event.getResult() == TaskEvent.Result.WAIT) {
-                plugin.getAuthorizationProvider().startTracking(user, player);
+                plugin.getAuthorizationProvider().startTracking(player, true);
             } else {
                 if (autoLoginEnabled) {
                     plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-premium-logged-in")), 500);
@@ -79,7 +79,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                     if (event.getResult() == TaskEvent.Result.BYPASS) user.setLastAuthentication(Timestamp.valueOf(LocalDateTime.now()));
                     plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-session-logged-in")), 500);
                 } else {
-                    plugin.getAuthorizationProvider().startTracking(user, player);
+                    plugin.getAuthorizationProvider().startTracking(player, true);
                 }
             }
 
@@ -103,83 +103,25 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             return new PreLoginResult(PreLoginState.DENIED, plugin.getMessages().getMessage("kick-illegal-username"), null);
         }
 
+        var user = plugin.getDatabaseProvider().getByName(username);
+
         try {
-            plugin.checkInvalidCaseUsername(username);
+            plugin.checkInvalidCaseUsername(username, user);
         } catch (ErrorThenKickException e) {
             return new PreLoginResult(PreLoginState.DENIED, e.getReason(), null);
         }
 
-        PremiumUser mojangData = null;
-
-        if (plugin.getConfiguration().get(ConfigurationKeys.CHECK_PREMIUM)) {
-            try {
-                mojangData = plugin.getPremiumProvider().getUserForName(username);
-            } catch (PremiumException e) {
-                var message = switch (e.getIssue()) {
-                    case THROTTLED -> plugin.getMessages().getMessage("kick-premium-error-throttled");
-                    default -> {
-                        plugin.getLogger().error("Encountered an exception while communicating with the Mojang API!");
-                        e.printStackTrace();
-                        yield plugin.getMessages().getMessage("kick-premium-error-undefined");
-                    }
-                };
-
-                return new PreLoginResult(PreLoginState.DENIED, message, null);
-            }
+        // Player is registered and has enabled autologin; handle them forcibly as an online player
+        if (user != null && user.autoLoginEnabled()) {
+            return new PreLoginResult(PreLoginState.FORCE_ONLINE, null, user);
         }
 
-        if (mojangData == null) {
-            // A user with this name does not exist in the Mojang database. It is impossible for this user to be premium.
-            User user;
+        // Player is not registered yet; check IP limit and handle them as an offline player
+        if (user == null) {
             try {
-                user = checkAndValidateByName(username, null, true, address);
-            } catch (InvalidCommandArgument e) {
-                return new PreLoginResult(PreLoginState.DENIED, e.getUserFuckUp(), null);
-            }
-
-            //noinspection ConstantConditions //kyngs: There's no way IntelliJ is right
-            if (user.getPremiumUUID() != null) {
-                // We will have to encrypt, otherwise someone could forcefully disable other user's premium autologin
-                return new PreLoginResult(PreLoginState.FORCE_ONLINE, null, user);
-            }
-        } else {
-            // A user with this name exists in the Mojang database, we need to figure out whether to encrypt
-            var premiumID = mojangData.uuid();
-            var user = plugin.getDatabaseProvider().getByPremiumUUID(premiumID);
-
-            if (user == null) {
-                User userByName;
-                try {
-                    userByName = checkAndValidateByName(username, premiumID, true, address);
-                } catch (InvalidCommandArgument e) {
-                    return new PreLoginResult(PreLoginState.DENIED, e.getUserFuckUp(), null);
-                }
-
-                // The following condition may be true if we've generated a new user
-                //noinspection ConstantConditions //kyngs: There's no way IntelliJ is right
-                if (userByName.autoLoginEnabled())
-                    return new PreLoginResult(PreLoginState.FORCE_ONLINE, null, userByName);
-            } else {
-                User byName;
-                try {
-                    byName = checkAndValidateByName(username, premiumID, false, address);
-                } catch (InvalidCommandArgument e) {
-                    return new PreLoginResult(PreLoginState.DENIED, e.getUserFuckUp(), null);
-                }
-
-                if (byName != null && !user.equals(byName)) {
-                    // A user with this name already exists, however, it is not the same user as the premium one.
-                    return handleProfileConflict(user, byName);
-                }
-
-                if (!user.getLastNickname().contentEquals(mojangData.name())) {
-                    // User changed nickname, update DB
-                    user.setLastNickname(mojangData.name());
-
-                    plugin.getDatabaseProvider().updateUser(user);
-                }
-
-                return new PreLoginResult(PreLoginState.FORCE_ONLINE, null, user);
+                plugin.checkIpLimit(address);
+            } catch (ErrorThenKickException e) {
+                return new PreLoginResult(PreLoginState.DENIED, e.getReason(), null);
             }
         }
 
@@ -202,61 +144,9 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
 
     }
 
-    /**
-     * Checks and validates a user by their username.
-     *
-     * @param username  The username of the user.
-     * @param premiumID The premium ID of the user.
-     * @param generate  True if a new user should be generated if the user doesn't exist, false otherwise.
-     * @param ip        The IP address of the user.
-     * @return The validated user, or null if the user doesn't exist and {@code generate} is false.
-     * @throws InvalidCommandArgument If the username is invalid or there are other validation issues.
-     */
-    private User checkAndValidateByName(String username, @Nullable UUID premiumID, boolean generate, InetAddress ip) throws InvalidCommandArgument, ErrorThenKickException {
-        plugin.checkInvalidCaseUsername(username);
-
-        if (generate) {
-            plugin.checkIpLimit(ip);
-
-            var newID = plugin.generateNewUUID(
-                    username,
-                    premiumID
-            );
-
-            var conflictingUser = plugin.getDatabaseProvider().getByUUID(newID);
-
-            if (conflictingUser != null) {
-                throw new InvalidCommandArgument(plugin.getMessages().getMessage("kick-occupied-username",
-                        "%username%", conflictingUser.getLastNickname()
-                ));
-            }
-
-            User user = new AuthenticUser(
-                    newID,
-                    null,
-                    null,
-                    username,
-                    Timestamp.valueOf(LocalDateTime.now()),
-                    Timestamp.valueOf(LocalDateTime.now()),
-                    null,
-                    ip.getHostAddress(),
-                    null,
-                    null,
-                    null
-            );
-
-            plugin.getDatabaseProvider().insertUser(user);
-            return user;
-        }
-
-        return null;
-    }
-
     protected BiHolder<Boolean, S> chooseServer(P player, @Nullable String ip, @Nullable User user) {
         var id = platformHandle.getUUIDForPlayer(player);
         var fromFloodgate = plugin.fromFloodgate(id);
-
-        var sessionTime = Duration.ofSeconds(plugin.getConfiguration().get(ConfigurationKeys.SESSION_TIMEOUT));
 
         if (fromFloodgate) {
             user = null;
@@ -264,11 +154,7 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
             user = plugin.getDatabaseProvider().getByUUID(id);
         }
 
-        if (ip == null) {
-            ip = platformHandle.getIP(player);
-        }
-
-        if (plugin.getAuthorizationProvider().isAuthorized(player) && (fromFloodgate || user.autoLoginEnabled() || (sessionTime != null && user.getLastAuthentication() != null && ip.equals(user.getIp()) && user.getLastAuthentication().toLocalDateTime().plus(sessionTime).isAfter(LocalDateTime.now())))) {
+        if (plugin.getAuthorizationProvider().isAuthorized(player)) {
             return new BiHolder<>(true, plugin.getServerHandler().chooseLobbyServer(user, player, true, false));
         } else {
             return new BiHolder<>(false, plugin.getServerHandler().chooseLimboServer(user, player));

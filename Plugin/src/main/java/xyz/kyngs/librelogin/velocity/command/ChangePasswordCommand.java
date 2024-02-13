@@ -47,7 +47,7 @@ public class ChangePasswordCommand extends ALibreCommand implements SimpleComman
 
             var user = getUser(player);
 
-            if (!user.isRegistered()) {
+            if (user == null || !user.isRegistered()) {
                 throw new InvalidCommandArgument(getMessage("error-no-password"));
             }
 

@@ -8,7 +8,6 @@ package xyz.kyngs.librelogin.common.authorization;
 
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.title.Title;
 import xyz.kyngs.librelogin.api.authorization.AuthorizationProvider;
@@ -26,7 +25,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S> implements AuthorizationProvider<P> {
@@ -72,14 +70,14 @@ public class AuthenticAuthorizationProvider<P, S> extends AuthenticHandler<P, S>
         plugin.authorize(player, user, audience);
     }
 
-    public void startTracking(User user, P player) {
+    public void startTracking(P player, boolean isRegistered) {
         var audience = platformHandle.getAudienceForPlayer(player);
 
-        unAuthorized.put(player, user.isRegistered());
+        unAuthorized.put(player, isRegistered);
 
         plugin.cancelOnExit(plugin.delay(() -> {
             if (!unAuthorized.containsKey(player)) return;
-            sendInfoMessage(user.isRegistered(), audience);
+            sendInfoMessage(isRegistered, audience);
         }, 250), player);
 
         var limit = plugin.getConfiguration().get(ConfigurationKeys.SECONDS_TO_AUTHORIZE);
