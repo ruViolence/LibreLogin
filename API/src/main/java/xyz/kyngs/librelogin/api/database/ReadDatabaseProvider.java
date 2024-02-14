@@ -6,6 +6,8 @@
 
 package xyz.kyngs.librelogin.api.database;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.UUID;
 
@@ -22,7 +24,7 @@ public interface ReadDatabaseProvider {
      * @param name The name of the player.
      * @return The player, or null if the player does not exist.
      */
-    User getByName(String name);
+    @Nullable User getByName(String name);
 
     /**
      * This method finds a player by their UUID.
@@ -30,7 +32,7 @@ public interface ReadDatabaseProvider {
      * @param uuid The UUID of the player.
      * @return The player, or null if the player does not exist.
      */
-    User getByUUID(UUID uuid);
+    @Nullable User getByUUID(UUID uuid);
 
     /**
      * This method finds a player by their premium UUID.
@@ -38,7 +40,7 @@ public interface ReadDatabaseProvider {
      * @param uuid The premium UUID of the player.
      * @return The player, or null if the player does not exist.
      */
-    User getByPremiumUUID(UUID uuid);
+    @Nullable User getByPremiumUUID(UUID uuid);
 
     /**
      * This method fetches all players. <b>Use this with caution.</b>
