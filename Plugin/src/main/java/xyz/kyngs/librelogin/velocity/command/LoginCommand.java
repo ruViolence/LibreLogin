@@ -16,6 +16,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
 import xyz.kyngs.librelogin.api.event.events.WrongPasswordEvent;
+import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.event.events.AuthenticWrongPasswordEvent;
 import xyz.kyngs.librelogin.velocity.VelocityBootstrap;
@@ -68,6 +69,7 @@ public class LoginCommand extends ALibreCommand implements SimpleCommand {
 
                 if (event.getResult() == TaskEvent.Result.NORMAL || event.getResult() == TaskEvent.Result.BYPASS) {
                     sender.sendMessage(getMessage("info-logged-in"));
+                    sender.showTitle(AuthenticLibreLogin.CLEAR_TITLE);
                     velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, player, AuthenticatedEvent.AuthenticationReason.LOGIN);
                 }
             } catch (Exception e) {

@@ -12,6 +12,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
@@ -78,6 +80,7 @@ import static xyz.kyngs.librelogin.common.config.ConfigurationKeys.*;
 
 public abstract class AuthenticLibreLogin<P, S> implements LibreLoginPlugin<P, S> {
 
+    public static final Title CLEAR_TITLE = Title.title(Component.empty(), Component.empty(), Title.DEFAULT_TIMES);
     public static final Gson GSON = new Gson();
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd. MM. yyyy HH:mm");
     public static final ExecutorService EXECUTOR;

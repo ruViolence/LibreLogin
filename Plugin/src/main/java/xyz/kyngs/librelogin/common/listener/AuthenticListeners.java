@@ -7,6 +7,7 @@
 package xyz.kyngs.librelogin.common.listener;
 
 import com.velocitypowered.api.proxy.Player;
+import net.kyori.adventure.audience.Audience;
 import org.jetbrains.annotations.Nullable;
 import xyz.kyngs.librelogin.api.BiHolder;
 import xyz.kyngs.librelogin.api.PlatformHandle;
@@ -74,10 +75,18 @@ public class AuthenticListeners<Plugin extends AuthenticLibreLogin<P, S>, P, S> 
                 plugin.getAuthorizationProvider().startTracking(player, true);
             } else {
                 if (autoLoginEnabled) {
-                    plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-premium-logged-in")), 500);
+                    plugin.delay(() -> {
+                        Audience audience = plugin.getPlatformHandle().getAudienceForPlayer(player);
+                        audience.sendMessage(plugin.getMessages().getMessage("info-premium-logged-in"));
+                        audience.showTitle(AuthenticLibreLogin.CLEAR_TITLE);
+                    }, 500);
                 } else if (hasSession || event.getResult() == TaskEvent.Result.BYPASS) {
                     if (event.getResult() == TaskEvent.Result.BYPASS) user.setLastAuthentication(Timestamp.valueOf(LocalDateTime.now()));
-                    plugin.delay(() -> plugin.getPlatformHandle().getAudienceForPlayer(player).sendMessage(plugin.getMessages().getMessage("info-session-logged-in")), 500);
+                    plugin.delay(() -> {
+                        Audience audience = plugin.getPlatformHandle().getAudienceForPlayer(player);
+                        audience.sendMessage(plugin.getMessages().getMessage("info-session-logged-in"));
+                        audience.showTitle(AuthenticLibreLogin.CLEAR_TITLE);
+                    }, 500);
                 } else {
                     plugin.getAuthorizationProvider().startTracking(player, true);
                 }

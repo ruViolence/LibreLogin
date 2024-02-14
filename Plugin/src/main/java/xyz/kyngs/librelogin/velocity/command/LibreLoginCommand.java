@@ -10,6 +10,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import xyz.kyngs.librelogin.api.configuration.CorruptedConfigurationException;
 import xyz.kyngs.librelogin.api.event.events.AuthenticatedEvent;
+import xyz.kyngs.librelogin.common.AuthenticLibreLogin;
 import xyz.kyngs.librelogin.common.command.InvalidCommandArgument;
 import xyz.kyngs.librelogin.common.event.events.AuthenticPasswordChangeEvent;
 import xyz.kyngs.librelogin.common.event.events.AuthenticPremiumLoginSwitchEvent;
@@ -196,6 +197,7 @@ public class LibreLoginCommand extends ALibreCommand implements SimpleCommand {
                 velocityBootstrap.getLibreLogin().getAuthorizationProvider().authorize(user, target, AuthenticatedEvent.AuthenticationReason.LOGIN);
 
                 sender.sendMessage(getMessage("info-logged-in"));
+                sender.showTitle(AuthenticLibreLogin.CLEAR_TITLE);
             });
             case "user_changepassword" -> runAsync(sender, () -> {
                 String name = args.length > 1 ? args[1] : null;
