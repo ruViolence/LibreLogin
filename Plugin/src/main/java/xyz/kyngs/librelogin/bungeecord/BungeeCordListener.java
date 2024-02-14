@@ -13,16 +13,12 @@ import net.md_5.bungee.api.event.*;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
-import xyz.kyngs.librelogin.api.event.exception.EventCancelledException;
-import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
 
 import java.lang.reflect.Field;
-import java.util.NoSuchElementException;
 
 import static net.md_5.bungee.event.EventPriority.HIGHEST;
-import static net.md_5.bungee.event.EventPriority.LOW;
 
 public class BungeeCordListener extends AuthenticListeners<BungeeCordLibreLogin, ProxiedPlayer, ServerInfo> implements Listener {
 
@@ -103,35 +99,6 @@ public class BungeeCordListener extends AuthenticListeners<BungeeCordLibreLogin,
             event.getPlayer().disconnect(plugin.getSerializer().serialize(plugin.getMessages().getMessage("kick-no-" + (server.key() ? "lobby" : "limbo"))));
         } else {
             event.setTarget(server.value());
-        }
-    }
-
-    @EventHandler(priority = LOW)
-    public void onKick(ServerKickEvent event) {
-        var reason = plugin.getSerializer().deserialize(event.getKickReasonComponent());
-        var message = plugin.getMessages().getMessage("info-kick").replaceText(builder -> builder.matchLiteral("%reason%").replacement(reason));
-        var player = event.getPlayer();
-        var audience = platformHandle.getAudienceForPlayer(event.getPlayer());
-
-        if (event.getState() == ServerKickEvent.State.CONNECTED) {
-            if (!plugin.getConfiguration().get(ConfigurationKeys.FALLBACK)) {
-                event.setKickReasonComponent(plugin.getSerializer().serialize(message));
-                event.setCancelled(false);
-            } else {
-                try {
-                    var server = plugin.getServerHandler().chooseLobbyServer(plugin.getDatabaseProvider().getByUUID(player.getUniqueId()), player, false, true);
-
-                    if (server == null) throw new NoSuchElementException();
-
-                    event.setCancelled(true);
-                    event.setCancelServer(server);
-                } catch (NoSuchElementException | EventCancelledException e) {
-                    event.setKickReasonComponent(plugin.getSerializer().serialize(message));
-                    event.setCancelled(false);
-                }
-            }
-        } else {
-            audience.sendMessage(message);
         }
     }
 

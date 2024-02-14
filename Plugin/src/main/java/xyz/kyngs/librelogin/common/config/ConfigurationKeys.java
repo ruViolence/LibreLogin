@@ -277,13 +277,6 @@ public class ConfigurationKeys {
             ConfigurateHelper::getBoolean
     );
 
-    public static final ConfigurationKey<Boolean> FALLBACK = new ConfigurationKey<>(
-            "fallback",
-            false,
-            "!!THIS OPTION IS IRRELEVANT WHEN USING PAPER!! Should we fallback players to lobby servers if the server they are on shutdowns? If set to false, they will be kicked.",
-            ConfigurateHelper::getBoolean
-    );
-
     public static final ConfigurationKey<Boolean> ALLOW_PROXY_CONNECTIONS = new ConfigurationKey<>(
             "allow-proxy-connections",
             true,

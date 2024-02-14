@@ -12,7 +12,6 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.GameProfileRequestEvent;
-import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
@@ -21,14 +20,11 @@ import com.velocitypowered.api.util.GameProfile;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import net.kyori.adventure.text.Component;
-import xyz.kyngs.librelogin.api.event.exception.EventCancelledException;
-import xyz.kyngs.librelogin.common.config.ConfigurationKeys;
 import xyz.kyngs.librelogin.common.listener.AuthenticListeners;
 import xyz.kyngs.librelogin.common.listener.PreLoginResult;
 import xyz.kyngs.librelogin.common.util.GeneralUtil;
 
 import java.lang.reflect.Field;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Player, RegisteredServer> {
@@ -167,31 +163,6 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
             event.setInitialServer(server.value());
         }
 
-    }
-
-    @Subscribe(order = PostOrder.EARLY)
-    public void onKick(KickedFromServerEvent event) {
-        var reason = event.getServerKickReason().orElse(Component.text("null"));
-        var message = plugin.getMessages().getMessage("info-kick").replaceText(builder -> builder.matchLiteral("%reason%").replacement(reason));
-        var player = event.getPlayer();
-
-        if (event.kickedDuringServerConnect()) {
-            event.setResult(KickedFromServerEvent.Notify.create(message));
-        } else {
-            if (!plugin.getConfiguration().get(ConfigurationKeys.FALLBACK) || plugin.getServerHandler().getLobbyServers().containsValue(event.getServer())) {
-                event.setResult(KickedFromServerEvent.DisconnectPlayer.create(message));
-            } else {
-                try {
-                    var server = plugin.getServerHandler().chooseLobbyServer(plugin.getDatabaseProvider().getByUUID(player.getUniqueId()), player, false, true);
-
-                    if (server == null) throw new NoSuchElementException();
-
-                    event.setResult(KickedFromServerEvent.RedirectPlayer.create(server, message));
-                } catch (NoSuchElementException | EventCancelledException e) {
-                    event.setResult(KickedFromServerEvent.DisconnectPlayer.create(message));
-                }
-            }
-        }
     }
 
 
