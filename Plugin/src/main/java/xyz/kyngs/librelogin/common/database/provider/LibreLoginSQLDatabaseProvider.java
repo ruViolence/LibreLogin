@@ -163,15 +163,25 @@ public abstract class LibreLoginSQLDatabaseProvider extends AuthenticDatabasePro
     public void insertUsers(Collection<User> users) {
         plugin.reportMainThread();
         connector.runQuery(connection -> {
+            connection.setAutoCommit(false);
             var ps = connection.prepareStatement("INSERT " + getIgnoreSyntax() + " INTO librepremium_data(uuid, premium_uuid, hashed_password, salt, algo, last_nickname, joined, last_seen, secret, ip, last_authentication, last_server, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" + getIgnoreSuffix());
 
+            int i = 0;
             for (User user : users) {
                 insertToStatement(ps, user);
 
                 ps.addBatch();
+                ++i;
+
+                if (i % 1000 == 0) {
+                    ps.executeBatch();
+                    connection.commit();
+                }
             }
 
             ps.executeBatch();
+            connection.commit();
+            connection.setAutoCommit(true);
         });
     }
 
