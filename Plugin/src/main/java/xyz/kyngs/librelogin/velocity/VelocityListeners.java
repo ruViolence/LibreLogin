@@ -13,6 +13,7 @@ import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.GameProfileRequestEvent;
 import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
+import com.velocitypowered.api.event.player.ServerPreConnectEvent;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -165,5 +166,12 @@ public class VelocityListeners extends AuthenticListeners<VelocityLibreLogin, Pl
 
     }
 
+    @Subscribe(order = PostOrder.LAST)
+    public void onServerSwitch(ServerPreConnectEvent event) {
+        var player = event.getPlayer();
+        if (plugin.getAuthorizationProvider().isAuthorized(player)) return;
+        
+        event.setResult(ServerPreConnectEvent.ServerResult.allowed(plugin.getServerHandler().chooseLimboServer(null, player)));
+    }
 
 }
